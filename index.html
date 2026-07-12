@@ -36,7 +36,9 @@
         <button style="width:auto; padding: 10px 30px;" onclick="showPage('pAdd')">+ نشر إعلان جديد</button>
     </header>
     <div class="grid" id="mainGrid"></div>
-    <button style="background:#333; margin-top:50px; font-size:12px;" onclick="adminPanel()">لوحة التحكم الخاصة بك</button>
+    <div style="text-align:center; margin-top:50px;">
+        <span style="cursor:pointer; color:#888; font-size:12px;" onclick="checkAdmin()">لوحة التحكم</span>
+    </div>
 </div>
 
 <div id="pAdd" class="page">
@@ -75,6 +77,12 @@
     <button style="background:#555" onclick="showPage('p2')">← رجوع للفروع</button>
     <h2 id="subName"></h2>
     <div id="adList"></div>
+</div>
+
+<div id="pAdmin" class="page">
+    <button style="background:#555" onclick="showPage('p1')">← خروج</button>
+    <h2>لوحة التحكم</h2>
+    <div id="adminAds"></div>
 </div>
 
 <script type="module">
@@ -121,31 +129,38 @@
         list.innerHTML = "";
         snap.forEach((doc) => {
             const a = doc.data();
-            if(a.sub == sub && a.status === 'approved') {
-                list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
-            }
+            if(a.sub == sub && a.status === 'approved') list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
         });
         showPage('p3');
     };
 
-    window.adminPanel = async () => {
-        const pass = prompt("كلمة سر المدير:");
-        if(pass === "2008n2008M") {
-            const snap = await getDocs(window.colRef);
-            let html = "<button onclick='location.reload()'>رجوع</button><h3>إعلانات قيد المراجعة:</h3>";
-            snap.forEach(d => {
-                if(d.data().status === 'pending') {
-                    html += `<div class="ad-box"><h4>${d.data().title}</h4><button onclick="approve('${d.id}')">موافقة ونشر</button></div>`;
-                }
-            });
-            document.getElementById('p1').innerHTML = html;
+    window.checkAdmin = () => {
+        const p = prompt("كلمة سر الإدارة:");
+        if(p === "2008n2008M") {
+            loadAdminAds();
+            showPage('pAdmin');
         } else { alert("كلمة سر خاطئة!"); }
     };
 
-    window.approve = async (id) => {
-        await updateDoc(doc(window.db, "ads", id), { status: 'approved' });
-        alert("تم النشر!");
-        location.reload();
+    async function loadAdminAds() {
+        const container = document.getElementById('adminAds');
+        container.innerHTML = "جاري التحميل...";
+        const snap = await getDocs(window.colRef);
+        container.innerHTML = "";
+        snap.forEach(d => {
+            if(d.data().status === 'pending') {
+                container.innerHTML += `<div class="ad-box"><h4>${d.data().title}</h4>
+                <button onclick="updateAd('${d.id}', 'approved')">موافقة ونشر</button>
+                <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض الإعلان</button></div>`;
+            }
+        });
+    }
+
+    window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); alert("تم التحديث!"); loadAdminAds(); };
+
+    window.rejectAd = async (id) => {
+        const reason = prompt("سبب الرفض:");
+        if(reason) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: reason }); alert("تم الرفض!"); loadAdminAds(); }
     };
 
     window.delAd = async (id, pass) => {
@@ -164,7 +179,7 @@
                 sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
                 desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
                 curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value,
-                status: 'pending' 
+                status: 'pending'
             });
             alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
         };
