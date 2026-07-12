@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
+    <!-- ميزة PWA: التوافق كمتصفح تطبيق -->
+    <meta name="theme-color" content="#121212">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi1YjZgdmJINinINmE2KjZg9i02YjYp9iqIiwic2hvcnRfbmFtZSI6IsmE2KjZg9i02YjYp9iqIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIn0=">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -120,10 +124,21 @@
             const a = d.data();
             if(a.sub == sub && a.status === 'approved') {
                 let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="shareAd('${a.title}')">مشاركة</button></div>`;
+                // إضافة تاريخ النشر (ميزة 5)
+                let date = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleDateString('ar-SY') : "منذ فترة";
+                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr} | التاريخ: ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button></div>`;
             }
         });
         showPage('p3');
+    };
+
+    // ميزة التعديل (ميزة 2)
+    window.editAd = async (id, oldPass) => {
+        const p = prompt("أدخل كلمة سر الإعلان للتعديل:");
+        if(p == oldPass) {
+            const newDesc = prompt("أدخل الوصف الجديد:");
+            if(newDesc) { await updateDoc(doc(window.db, "ads", id), { desc: newDesc }); location.reload(); }
+        } else alert("كلمة سر خاطئة!");
     };
 
     window.publish = async () => {
@@ -140,7 +155,7 @@
             title: document.getElementById('iTitle').value, sub: document.getElementById('iSub').value,
             desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
             curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
-            status: 'pending', views: 0, featured: false
+            status: 'pending', timestamp: new Date()
         });
         alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
     };
@@ -159,7 +174,6 @@
                             <h3>${a.title}</h3>${imgs}
                             <p>الاسم: ${a.name}</p><p>الهاتف: ${a.phone}</p><p>الوصف: ${a.desc}</p>
                             <button onclick="updateAd('${d.id}', 'approved')">موافقة ونشر</button>
-                            <button onclick="toggleFeatured('${d.id}', ${a.featured})">تبديل التميز: ${a.featured ? 'مميز' : 'عادي'}</button>
                             <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض</button>
                         </div>`;
                     }
@@ -174,8 +188,6 @@
         boxes.forEach(b => b.style.display = b.innerText.toUpperCase().includes(input) ? "" : "none");
     };
 
-    window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
-    window.toggleFeatured = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { featured: !status }); location.reload(); };
     window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
     window.rejectAd = async (id) => { const r = prompt("سبب الرفض:"); if(r) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: r }); location.reload(); } };
     window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); } };
