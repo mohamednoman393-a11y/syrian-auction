@@ -5,12 +5,14 @@
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
     <meta name="theme-color" content="#121212">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi1YjZgdmJINinINmE2KjZg9i02YjYp9iqIiwic2hvcnRfbmFtZSI6IsmE2KjZg9i02YjYp9iqIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIn0=">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
         const firebaseConfig = { apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE", authDomain: "gg55-9a884.firebaseapp.com", projectId: "gg55-9a884", storageBucket: "gg55-9a884.firebasestorage.app", messagingSenderId: "82936706158", appId: "1:82936706158:web:36e00ec48e134f5205227f" };
         window.db = getFirestore(initializeApp(firebaseConfig));
         window.colRef = collection(window.db, "ads");
+        window.usersRef = collection(window.db, "users");
         window.increment = increment;
     </script>
     <style>
@@ -19,18 +21,20 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; margin-top: 20px; }
         .card { background: #1e1e1e; padding: 25px; border-radius: 15px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; }
         .card:hover { transform: translateY(-5px); border-color: #27ae60; }
+        .card h3 { margin: 10px 0 0; font-size: 1.2rem; }
+        .emoji { font-size: 2.5rem; }
         input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; background: #2b2b2b !important; color: #ffffff !important; border: 2px solid #555 !important; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         button { background: #27ae60; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
         .ad-box { background: #1e1e1e; padding: 20px; margin-bottom: 15px; border-radius: 10px; border-right: 5px solid #27ae60; }
         .featured { border-right: 5px solid #f1c40f; }
         .del-btn { background: #c0392b !important; margin-top: 10px; font-size: 12px; }
-        .ad-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .ad-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: zoom-in; }
+        #imgOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:9999; }
     </style>
 </head>
 <body>
 
-<div id="overlay" onclick="this.style.display='none'"><img id="bigImg" style="max-width:90%; max-height:90%;"></div>
+<div id="imgOverlay" onclick="this.style.display='none'"><img id="bigImg" style="max-width:90%; max-height:90%; border-radius:10px;"></div>
 
 <div id="p1" class="page active">
     <header style="text-align:center; padding: 20px;">
@@ -65,9 +69,9 @@
 <div id="pProfile" class="page">
     <button style="background:#555" onclick="showPage('p1')">← رجوع</button>
     <h2>ملفك الشخصي</h2>
-    <input type="text" id="pNameInput" placeholder="اسمك الكريم">
-    <button onclick="saveProfile()">حفظ الاسم</button>
-    <div id="myAds"></div>
+    <input type="text" id="pUserName" placeholder="اسمك الكريم">
+    <input type="text" id="pUserCode" placeholder="كود شخصي فريد (مثلاً: 123)">
+    <button onclick="saveProfile()">حفظ الملف الشخصي</button>
 </div>
 
 <div id="p2" class="page"><button style="background:#555" onclick="showPage('p1')">← رجوع</button><h2 id="catName"></h2><div class="grid" id="subGrid"></div></div>
@@ -75,8 +79,6 @@
 <div id="pAdmin" class="page"><button style="background:#555" onclick="showPage('p1')">← خروج</button><h2>إعلانات قيد المراجعة</h2><div id="adminAds"></div></div>
 
 <script type="module">
-    import { getDocs, deleteDoc, doc, addDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-    
     const cities = ["دمشق", "حلب", "حمص", "اللاذقية", "طرطوس", "حماة", "دير الزور", "الرقة", "إدلب", "السويداء", "درعا", "القنيطرة", "الحسكة"];
     const data = {
         "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]}, "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
@@ -94,44 +96,99 @@
         iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
     }
 
-    window.saveProfile = () => { localStorage.setItem('userName', document.getElementById('pNameInput').value); alert("تم حفظ الاسم!"); };
-    window.showImg = (src) => { document.getElementById('bigImg').src = src; document.getElementById('overlay').style.display = 'flex'; };
-    window.updateSubs = () => { const s = document.getElementById('iSub'); s.innerHTML = ""; data[iCat.value].subs.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`); };
-    window.openP2 = (cat) => { document.getElementById('catName').innerText = cat; const grid = document.getElementById('subGrid'); grid.innerHTML = ""; data[cat].subs.forEach(s => grid.innerHTML += `<div class="card" onclick="openP3('${s}')"><h4>${s}</h4></div>`); showPage('p2'); };
+    // تعديلات الملف الشخصي
+    window.saveProfile = async () => {
+        const code = document.getElementById('pUserCode').value;
+        const q = query(window.usersRef, where("code", "==", code));
+        const snap = await getDocs(q);
+        if(!snap.empty) return alert("❌ هذا الكود محجوز!");
+        localStorage.setItem('userName', document.getElementById('pUserName').value);
+        localStorage.setItem('userCode', code);
+        await addDoc(window.usersRef, { name: document.getElementById('pUserName').value, code: code });
+        alert("✅ تم حفظ الملف!"); 
+    };
+
+    window.zoomImg = (src) => { document.getElementById('bigImg').src = src; document.getElementById('imgOverlay').style.display = 'flex'; };
+
+    window.updateSubs = () => {
+        const s = document.getElementById('iSub'); s.innerHTML = "";
+        data[iCat.value].subs.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`);
+    };
+
+    window.openP2 = (cat) => {
+        document.getElementById('catName').innerText = cat;
+        const grid = document.getElementById('subGrid'); grid.innerHTML = "";
+        data[cat].subs.forEach(s => grid.innerHTML += `<div class="card" onclick="openP3('${s}')"><h4>${s}</h4></div>`);
+        showPage('p2');
+    };
 
     window.openP3 = async (sub) => {
         document.getElementById('subName').innerText = sub;
-        const list = document.getElementById('adList'); const snap = await getDocs(window.colRef);
+        const list = document.getElementById('adList');
+        const snap = await getDocs(window.colRef);
         list.innerHTML = "";
         snap.forEach(d => {
             const a = d.data();
             if(a.sub == sub && a.status === 'approved') {
                 updateDoc(doc(window.db, "ads", d.id), { views: increment(1) });
-                let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img" onclick="showImg('${i}')">`).join('') : "";
-                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>المحافظة: ${a.city} | 👀 ${a.views || 0}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> <button onclick="shareAd('${a.title}')">مشاركة</button></div>`;
+                let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img" onclick="zoomImg('${i}')">`).join('') : "";
+                let date = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleDateString('ar-SY') : "منذ فترة";
+                let refreshBtn = localStorage.getItem('userCode') == a.creatorCode ? `<button onclick="refreshAd('${d.id}')">تنشيط</button>` : "";
+                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>المحافظة: ${a.city} | السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0} | ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> ${refreshBtn}</div>`;
             }
         });
         showPage('p3');
     };
 
-    window.publish = async () => {
-        const uName = localStorage.getItem('userName') || "زائر";
-        const imgs = []; const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
-        if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
-        await addDoc(window.colRef, {
-            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
-            city: document.getElementById('iCity').value, creator: uName, sub: document.getElementById('iSub').value, 
-            price: document.getElementById('iPrice').value, curr: document.getElementById('iCurr').value, 
-            images: imgs, pass: document.getElementById('iPass').value, desc: document.getElementById('iDesc').value,
-            status: 'pending', views: 0, featured: false, timestamp: new Date()
-        });
-        alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
+    window.refreshAd = async (id) => {
+        let d = new Date(); d.setDate(d.getDate() + 7);
+        await updateDoc(doc(window.db, "ads", id), { expiry: Timestamp.fromDate(d) });
+        alert("✅ تم التنشيط 7 أيام إضافية!");
     };
 
-    window.checkAdmin = () => { if(prompt("كلمة سر الإدارة:") === "2008n2008M") showPage('pAdmin'); };
-    window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
+    window.publish = async () => {
+        const uCode = localStorage.getItem('userCode');
+        if(!uCode) return alert("⚠️ يرجى إنشاء ملف شخصي بكود أولاً!");
+        const expiry = new Date(); expiry.setDate(expiry.getDate() + 30);
+        
+        const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
+        const imgs = [];
+        if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
+        if(imgs.length === 0) return alert("⚠️ يجب اختيار صورة!");
+
+        await addDoc(window.colRef, {
+            creatorCode: uCode, expiry: Timestamp.fromDate(expiry),
+            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
+            city: document.getElementById('iCity').value, sub: document.getElementById('iSub').value, desc: document.getElementById('iDesc').value, 
+            price: document.getElementById('iPrice').value, curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
+            status: 'pending', views: 0, featured: false, timestamp: new Date()
+        });
+        alert("✅ تم الإرسال!"); location.reload();
+    };
+
+    window.checkAdmin = () => {
+        if(prompt("كلمة سر الإدارة:") === "2008n2008M") {
+            showPage('pAdmin');
+            const container = document.getElementById('adminAds');
+            getDocs(window.colRef).then(snap => {
+                container.innerHTML = "";
+                snap.forEach(d => {
+                    const a = d.data();
+                    if(a.status === 'pending') {
+                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
+                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>${imgs}<p>${a.desc}</p>
+                        <button onclick="updateAd('${d.id}', 'approved')">قبول</button>
+                        <button onclick="rejectAd('${d.id}')">رفض</button></div>`;
+                    }
+                });
+            });
+        }
+    };
+
+    window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
+    window.rejectAd = async (id) => { await updateDoc(doc(window.db, "ads", id), { status: 'rejected' }); location.reload(); };
     window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } };
-    window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
+    window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
     window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
     window.searchAds = () => { const input = document.getElementById('searchInput').value.toUpperCase(); document.querySelectorAll('.ad-box').forEach(b => b.style.display = b.innerText.toUpperCase().includes(input) ? "" : "none"); };
 </script>
