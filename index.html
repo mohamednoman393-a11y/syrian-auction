@@ -135,10 +135,12 @@
                 snap.forEach(d => {
                     const a = d.data();
                     if(a.status === 'pending') {
-                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>
-                        <button onclick="updateAd('${d.id}', 'approved')">قبول</button>
+                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
+                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>${imgs}
+                        <p>الوصف: ${a.desc}</p>
+                        <button onclick="updateAd('${d.id}', 'approved')">قبول ونشر</button>
                         <button onclick="toggleFeatured('${d.id}', ${a.featured})">تبديل التميز: ${a.featured ? 'مميز' : 'عادي'}</button>
-                        <button onclick="rejectAd('${d.id}')">رفض</button></div>`;
+                        <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض</button></div>`;
                     }
                 });
             });
@@ -148,7 +150,7 @@
     window.toggleFeatured = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { featured: !status }); location.reload(); };
     window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
     window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
-    window.rejectAd = async (id) => { await updateDoc(doc(window.db, "ads", id), { status: 'rejected' }); location.reload(); };
+    window.rejectAd = async (id) => { const r = prompt("سبب الرفض:"); if(r) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: r }); location.reload(); } };
     window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } };
     window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
     window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
