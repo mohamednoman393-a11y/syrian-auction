@@ -96,19 +96,24 @@
         iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
     }
 
-    // تعديلات الملف الشخصي
+    // الميزات الجديدة مدمجة فوق الدوال الأصلية
     window.saveProfile = async () => {
+        const name = document.getElementById('pUserName').value;
         const code = document.getElementById('pUserCode').value;
         const q = query(window.usersRef, where("code", "==", code));
         const snap = await getDocs(q);
-        if(!snap.empty) return alert("❌ هذا الكود محجوز!");
-        localStorage.setItem('userName', document.getElementById('pUserName').value);
+        if(!snap.empty) return alert("❌ الكود محجوز، اختر آخر!");
+        localStorage.setItem('userName', name);
         localStorage.setItem('userCode', code);
-        await addDoc(window.usersRef, { name: document.getElementById('pUserName').value, code: code });
-        alert("✅ تم حفظ الملف!"); 
+        await addDoc(window.usersRef, { name, code });
+        alert("✅ تم حفظ الملف الشخصي!");
     };
 
-    window.zoomImg = (src) => { document.getElementById('bigImg').src = src; document.getElementById('imgOverlay').style.display = 'flex'; };
+    window.refreshAd = async (id) => {
+        let d = new Date(); d.setDate(d.getDate() + 7);
+        await updateDoc(doc(window.db, "ads", id), { expiry: Timestamp.fromDate(d) });
+        alert("✅ تم التنشيط لـ 7 أيام إضافية!");
+    };
 
     window.updateSubs = () => {
         const s = document.getElementById('iSub'); s.innerHTML = "";
@@ -133,28 +138,24 @@
                 updateDoc(doc(window.db, "ads", d.id), { views: increment(1) });
                 let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img" onclick="zoomImg('${i}')">`).join('') : "";
                 let date = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleDateString('ar-SY') : "منذ فترة";
-                let refreshBtn = localStorage.getItem('userCode') == a.creatorCode ? `<button onclick="refreshAd('${d.id}')">تنشيط</button>` : "";
-                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>المحافظة: ${a.city} | السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0} | ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> ${refreshBtn}</div>`;
+                let refreshBtn = (localStorage.getItem('userCode') == a.creatorCode) ? `<button onclick="refreshAd('${d.id}')">تنشيط الإعلان</button>` : "";
+                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>المحافظة: ${a.city} | السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0} | ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> <button onclick="shareAd('${a.title}')">مشاركة</button> ${refreshBtn}</div>`;
             }
         });
         showPage('p3');
     };
 
-    window.refreshAd = async (id) => {
-        let d = new Date(); d.setDate(d.getDate() + 7);
-        await updateDoc(doc(window.db, "ads", id), { expiry: Timestamp.fromDate(d) });
-        alert("✅ تم التنشيط 7 أيام إضافية!");
-    };
-
     window.publish = async () => {
         const uCode = localStorage.getItem('userCode');
-        if(!uCode) return alert("⚠️ يرجى إنشاء ملف شخصي بكود أولاً!");
+        if(!uCode) return alert("⚠️ يرجى حفظ ملفك الشخصي بالكود أولاً!");
         const expiry = new Date(); expiry.setDate(expiry.getDate() + 30);
         
         const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
         const imgs = [];
         if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
-        if(imgs.length === 0) return alert("⚠️ يجب اختيار صورة!");
+        if(document.getElementById('iImg2').files[0]) imgs.push(await getBase64(document.getElementById('iImg2').files[0]));
+        if(document.getElementById('iImg3').files[0]) imgs.push(await getBase64(document.getElementById('iImg3').files[0]));
+        if(imgs.length === 0) { alert("⚠️ يجب اختيار صورة!"); return; }
 
         await addDoc(window.colRef, {
             creatorCode: uCode, expiry: Timestamp.fromDate(expiry),
@@ -163,7 +164,7 @@
             price: document.getElementById('iPrice').value, curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
             status: 'pending', views: 0, featured: false, timestamp: new Date()
         });
-        alert("✅ تم الإرسال!"); location.reload();
+        alert("✅ تم الإرسال للمراجعة!"); location.reload();
     };
 
     window.checkAdmin = () => {
@@ -175,10 +176,9 @@
                 snap.forEach(d => {
                     const a = d.data();
                     if(a.status === 'pending') {
-                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>${imgs}<p>${a.desc}</p>
+                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3><p>${a.desc}</p>
                         <button onclick="updateAd('${d.id}', 'approved')">قبول</button>
-                        <button onclick="rejectAd('${d.id}')">رفض</button></div>`;
+                        <button onclick="updateAd('${d.id}', 'rejected')">رفض</button></div>`;
                     }
                 });
             });
@@ -186,9 +186,9 @@
     };
 
     window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
-    window.rejectAd = async (id) => { await updateDoc(doc(window.db, "ads", id), { status: 'rejected' }); location.reload(); };
     window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } };
     window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
+    window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
     window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
     window.searchAds = () => { const input = document.getElementById('searchInput').value.toUpperCase(); document.querySelectorAll('.ad-box').forEach(b => b.style.display = b.innerText.toUpperCase().includes(input) ? "" : "none"); };
 </script>
