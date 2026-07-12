@@ -17,6 +17,7 @@
         button { background: #27ae60; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
         .ad-box { background: #1e1e1e; padding: 20px; margin-bottom: 15px; border-radius: 10px; border-right: 5px solid #27ae60; }
         .del-btn { background: #c0392b !important; margin-top: 10px; font-size: 12px; }
+        .ad-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -36,6 +37,7 @@
     <input type="text" value="+963" disabled>
     <input type="tel" id="iPhone" placeholder="رقم الهاتف">
     <input type="text" id="iTitle" placeholder="عنوان الإعلان">
+    <input type="file" id="iImg" accept="image/*">
     <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
     <select id="iSub"><option value="">اختر المنتج</option></select>
     <div style="display:flex; gap:5px;">
@@ -49,6 +51,7 @@
         <option>دير الزور</option><option>الرقة</option><option>الحسكة</option><option>درعا</option>
         <option>السويداء</option><option>القنيطرة</option>
     </select>
+    <input type="password" id="iPass" placeholder="كلمة سر الحذف (خاصة بك)">
     <textarea id="iDesc" placeholder="وصف الإعلان"></textarea>
     <button onclick="publish()">نشر الإعلان الآن</button>
 </div>
@@ -105,29 +108,39 @@
     function openP3(sub) {
         document.getElementById('subName').innerText = sub;
         const list = document.getElementById('adList');
-        list.innerHTML = ads.map((a, index) => a.sub == sub ? `<div class="ad-box"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd(${index}, '${sub}')">حذف الإعلان</button></div>` : "").join('') || "<p>لا توجد إعلانات هنا بعد.</p>";
+        list.innerHTML = ads.map((a, index) => a.sub == sub ? `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd(${index}, '${sub}')">حذف الإعلان</button></div>` : "").join('') || "<p>لا توجد إعلانات هنا بعد.</p>";
         showPage('p3');
     }
 
     function delAd(index, sub) {
-        if(confirm("هل أنت متأكد؟")) {
+        const pass = prompt("أدخل كلمة سر الحذف الخاصة بهذا الإعلان:");
+        if(pass === ads[index].pass) {
             ads.splice(index, 1);
             openP3(sub);
-        }
+        } else { alert("كلمة سر خاطئة!"); }
     }
 
     function publish() {
-        const fields = ['iName', 'iTitle', 'iCat', 'iSub', 'iPrice', 'iCity', 'iDesc'];
+        const file = document.getElementById('iImg').files[0];
+        const fields = ['iName', 'iTitle', 'iCat', 'iSub', 'iPrice', 'iCity', 'iDesc', 'iPass'];
         for (let f of fields) { if(!document.getElementById(f).value) { alert("يرجى ملء جميع الحقول!"); return; } }
-        ads.push({
-            sub: document.getElementById('iSub').value,
-            title: document.getElementById('iTitle').value,
-            desc: document.getElementById('iDesc').value,
-            price: document.getElementById('iPrice').value,
-            curr: document.getElementById('iCurr').value
-        });
-        alert("✅ تم نشر إعلانك بنجاح في مزاد دمشق!");
-        openP3(document.getElementById('iSub').value);
+        if(!file) { alert("يرجى اختيار صورة!"); return; }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            ads.push({
+                sub: document.getElementById('iSub').value,
+                title: document.getElementById('iTitle').value,
+                desc: document.getElementById('iDesc').value,
+                price: document.getElementById('iPrice').value,
+                curr: document.getElementById('iCurr').value,
+                img: e.target.result,
+                pass: document.getElementById('iPass').value
+            });
+            alert("✅ تم نشر إعلانك بنجاح في مزاد دمشق!");
+            showPage('p1');
+        }
+        reader.readAsDataURL(file);
     }
 
     function showPage(id) {
