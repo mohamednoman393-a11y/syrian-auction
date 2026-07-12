@@ -23,21 +23,19 @@
         button { background: #27ae60; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
         .ad-box { background: #1e1e1e; padding: 20px; margin-bottom: 15px; border-radius: 10px; border-right: 5px solid #27ae60; }
         .featured { border-right: 5px solid #f1c40f; }
-        .del-btn { background: #c0392b !important; }
-        .ad-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin: 5px; }
+        .del-btn { background: #c0392b !important; margin-top: 10px; font-size: 12px; }
+        .ad-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin: 5px; cursor: pointer; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
-<div id="pStart" class="page active">
-    <h1 style="text-align:center">🇸🇾 اختر المحافظة</h1>
-    <div class="grid" id="cityGrid"></div>
-</div>
+<div id="overlay" onclick="this.style.display='none'"><img id="bigImg" style="max-width:90%; max-height:90%;"></div>
 
-<div id="p1" class="page">
-    <button style="background:#555" onclick="showPage('pStart')">← تغيير المحافظة</button>
+<div id="p1" class="page active">
     <header style="text-align:center; padding: 20px;">
-        <h1 id="cityName"></h1>
+        <h1>🇸🇾 مزاد دمشق</h1>
+        <button style="width:auto; padding: 5px 20px; background:#444;" onclick="showPage('pProfile')">👤 ملفي الشخصي</button>
         <input type="text" id="searchInput" placeholder="🔍 بحث عن إعلان..." onkeyup="searchAds()">
         <button style="width:auto; padding: 10px 30px;" onclick="showPage('pAdd')">+ نشر إعلان جديد</button>
     </header>
@@ -47,9 +45,10 @@
 
 <div id="pAdd" class="page">
     <button style="background:#555" onclick="showPage('p1')">← إلغاء</button>
-    <h3>إضافة إعلان في <span id="addCityName"></span></h3>
+    <h3>إضافة إعلان جديد</h3>
     <input type="text" id="iName" placeholder="الاسم الكامل">
     <input type="tel" id="iPhone" placeholder="رقم الهاتف">
+    <select id="iCity"><option value="">اختر المحافظة</option></select>
     <input type="text" id="iTitle" placeholder="عنوان الإعلان">
     <input type="file" id="iImg1"><input type="file" id="iImg2"><input type="file" id="iImg3">
     <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
@@ -61,6 +60,14 @@
     <input type="password" id="iPass" placeholder="كلمة سر الحذف">
     <textarea id="iDesc" placeholder="وصف الإعلان"></textarea>
     <button onclick="publish()">نشر الإعلان الآن</button>
+</div>
+
+<div id="pProfile" class="page">
+    <button style="background:#555" onclick="showPage('p1')">← رجوع</button>
+    <h2>ملفك الشخصي</h2>
+    <input type="text" id="pNameInput" placeholder="اسمك الكريم">
+    <button onclick="saveProfile()">حفظ الاسم</button>
+    <div id="myAds"></div>
 </div>
 
 <div id="p2" class="page"><button style="background:#555" onclick="showPage('p1')">← رجوع</button><h2 id="catName"></h2><div class="grid" id="subGrid"></div></div>
@@ -78,98 +85,51 @@
         "خدمات": {e: "🛠️", subs: ["صيانة", "نقل"]}, "أزياء": {e: "👕", subs: ["ملابس", "ساعات"]},
         "ترفيه": {e: "🎮", subs: ["ألعاب", "معدات"]}, "صناعة": {e: "⚙️", subs: ["حديد", "أخشاب"]}
     };
-    
-    let currentCity = "";
 
-    // بناء المحافظات
-    cities.forEach(c => document.getElementById('cityGrid').innerHTML += `<div class="card" onclick="selectCity('${c}')"><h3>${c}</h3></div>`);
+    cities.forEach(c => document.getElementById('iCity').innerHTML += `<option value="${c}">${c}</option>`);
+    const mainGrid = document.getElementById('mainGrid');
+    const iCat = document.getElementById('iCat');
+    for(let cat in data) {
+        mainGrid.innerHTML += `<div class="card" onclick="openP2('${cat}')"><div class="emoji">${data[cat].e}</div><h3>${cat}</h3></div>`;
+        iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+    }
 
-    window.selectCity = (c) => {
-        currentCity = c;
-        document.getElementById('cityName').innerText = c;
-        document.getElementById('addCityName').innerText = c;
-        const mainGrid = document.getElementById('mainGrid'); mainGrid.innerHTML = "";
-        const iCat = document.getElementById('iCat'); iCat.innerHTML = '<option value="">اختر الفئة</option>';
-        for(let cat in data) {
-            mainGrid.innerHTML += `<div class="card" onclick="openP2('${cat}')"><div class="emoji" style="font-size:2.5rem">${data[cat].e}</div><h3>${cat}</h3></div>`;
-            iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
-        }
-        showPage('p1');
-    };
-
-    window.updateSubs = () => {
-        const s = document.getElementById('iSub'); s.innerHTML = "";
-        data[document.getElementById('iCat').value].subs.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`);
-    };
-
-    window.openP2 = (cat) => {
-        document.getElementById('catName').innerText = cat;
-        const grid = document.getElementById('subGrid'); grid.innerHTML = "";
-        data[cat].subs.forEach(s => grid.innerHTML += `<div class="card" onclick="openP3('${s}')"><h4>${s}</h4></div>`);
-        showPage('p2');
-    };
+    window.saveProfile = () => { localStorage.setItem('userName', document.getElementById('pNameInput').value); alert("تم حفظ الاسم!"); };
+    window.showImg = (src) => { document.getElementById('bigImg').src = src; document.getElementById('overlay').style.display = 'flex'; };
+    window.updateSubs = () => { const s = document.getElementById('iSub'); s.innerHTML = ""; data[iCat.value].subs.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`); };
+    window.openP2 = (cat) => { document.getElementById('catName').innerText = cat; const grid = document.getElementById('subGrid'); grid.innerHTML = ""; data[cat].subs.forEach(s => grid.innerHTML += `<div class="card" onclick="openP3('${s}')"><h4>${s}</h4></div>`); showPage('p2'); };
 
     window.openP3 = async (sub) => {
         document.getElementById('subName').innerText = sub;
-        const list = document.getElementById('adList'); list.innerHTML = "جاري التحميل...";
-        const snap = await getDocs(window.colRef);
+        const list = document.getElementById('adList'); const snap = await getDocs(window.colRef);
         list.innerHTML = "";
         snap.forEach(d => {
             const a = d.data();
-            if(a.city === currentCity && a.sub == sub && a.status === 'approved') {
+            if(a.sub == sub && a.status === 'approved') {
                 updateDoc(doc(window.db, "ads", d.id), { views: increment(1) });
-                let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                let date = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleDateString('ar-SY') : "منذ فترة";
-                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0} | ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> <button onclick="shareAd('${a.title}')">مشاركة</button></div>`;
+                let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img" onclick="showImg('${i}')">`).join('') : "";
+                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>المحافظة: ${a.city} | 👀 ${a.views || 0}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> <button onclick="shareAd('${a.title}')">مشاركة</button></div>`;
             }
         });
         showPage('p3');
     };
 
     window.publish = async () => {
-        if(!document.getElementById('iName').value || !document.getElementById('iPhone').value || !document.getElementById('iTitle').value || !document.getElementById('iCat').value || !document.getElementById('iSub').value || !document.getElementById('iPrice').value || !document.getElementById('iPass').value || !document.getElementById('iDesc').value) {
-            alert("⚠️ يرجى تعبئة كافة الحقول المطلوبة!"); return;
-        }
-        const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
-        const imgs = [];
+        const uName = localStorage.getItem('userName') || "زائر";
+        const imgs = []; const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
         if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
-        if(document.getElementById('iImg2').files[0]) imgs.push(await getBase64(document.getElementById('iImg2').files[0]));
-        if(document.getElementById('iImg3').files[0]) imgs.push(await getBase64(document.getElementById('iImg3').files[0]));
-        if(imgs.length === 0) { alert("⚠️ يجب اختيار صورة واحدة على الأقل!"); return; }
-
         await addDoc(window.colRef, {
-            city: currentCity, name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
-            sub: document.getElementById('iSub').value, desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
-            curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
+            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
+            city: document.getElementById('iCity').value, creator: uName, sub: document.getElementById('iSub').value, 
+            price: document.getElementById('iPrice').value, curr: document.getElementById('iCurr').value, 
+            images: imgs, pass: document.getElementById('iPass').value, desc: document.getElementById('iDesc').value,
             status: 'pending', views: 0, featured: false, timestamp: new Date()
         });
         alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
     };
 
-    window.checkAdmin = () => {
-        if(prompt("كلمة سر الإدارة:") === "2008n2008M") {
-            showPage('pAdmin');
-            const container = document.getElementById('adminAds');
-            getDocs(window.colRef).then(snap => {
-                container.innerHTML = "";
-                snap.forEach(d => {
-                    const a = d.data();
-                    if(a.status === 'pending') {
-                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>${imgs}<p>${a.desc}</p>
-                        <button onclick="updateAd('${d.id}', 'approved')">قبول ونشر</button>
-                        <button onclick="toggleFeatured('${d.id}', ${a.featured})">تبديل التميز</button>
-                        <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض</button></div>`;
-                    }
-                });
-            });
-        }
-    };
-
-    window.toggleFeatured = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { featured: !status }); location.reload(); };
+    window.checkAdmin = () => { if(prompt("كلمة سر الإدارة:") === "2008n2008M") showPage('pAdmin'); };
     window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
-    window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
-    window.rejectAd = async (id) => { const r = prompt("سبب الرفض:"); if(r) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: r }); location.reload(); } };
     window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } };
     window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
     window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
