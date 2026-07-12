@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
+    <!-- كود الربط السحابي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
         const firebaseConfig = { apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE", authDomain: "gg55-9a884.firebaseapp.com", projectId: "gg55-9a884", storageBucket: "gg55-9a884.firebasestorage.app", messagingSenderId: "82936706158", appId: "1:82936706158:web:36e00ec48e134f5205227f" };
         window.db = getFirestore(initializeApp(firebaseConfig));
         window.colRef = collection(window.db, "ads");
@@ -35,6 +36,7 @@
         <button style="width:auto; padding: 10px 30px;" onclick="showPage('pAdd')">+ نشر إعلان جديد</button>
     </header>
     <div class="grid" id="mainGrid"></div>
+    <button style="background:#333; margin-top:50px; font-size:12px;" onclick="adminPanel()">لوحة التحكم الخاصة بك</button>
 </div>
 
 <div id="pAdd" class="page">
@@ -76,7 +78,7 @@
 </div>
 
 <script type="module">
-    import { getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getDocs, deleteDoc, doc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     const data = {
         "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]},
         "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
@@ -119,9 +121,31 @@
         list.innerHTML = "";
         snap.forEach((doc) => {
             const a = doc.data();
-            if(a.sub == sub) list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
+            if(a.sub == sub && a.status === 'approved') {
+                list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
+            }
         });
         showPage('p3');
+    };
+
+    window.adminPanel = async () => {
+        const pass = prompt("كلمة سر المدير:");
+        if(pass === "2008n2008M") {
+            const snap = await getDocs(window.colRef);
+            let html = "<button onclick='location.reload()'>رجوع</button><h3>إعلانات قيد المراجعة:</h3>";
+            snap.forEach(d => {
+                if(d.data().status === 'pending') {
+                    html += `<div class="ad-box"><h4>${d.data().title}</h4><button onclick="approve('${d.id}')">موافقة ونشر</button></div>`;
+                }
+            });
+            document.getElementById('p1').innerHTML = html;
+        } else { alert("كلمة سر خاطئة!"); }
+    };
+
+    window.approve = async (id) => {
+        await updateDoc(doc(window.db, "ads", id), { status: 'approved' });
+        alert("تم النشر!");
+        location.reload();
     };
 
     window.delAd = async (id, pass) => {
@@ -134,27 +158,15 @@
         const fields = ['iName', 'iTitle', 'iCat', 'iSub', 'iPrice', 'iCity', 'iDesc', 'iPass'];
         for (let f of fields) { if(!document.getElementById(f).value) { alert("يرجى ملء جميع الحقول!"); return; } }
         if(!file) { alert("يجب اختيار صورة!"); return; }
-        
-        const btn = document.getElementById('btnPublish');
-        btn.innerText = "جاري النشر...";
-        btn.disabled = true;
-
         const reader = new FileReader();
         reader.onload = async (e) => {
-            try {
-                await addDoc(window.colRef, {
-                    sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
-                    desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
-                    curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value
-                });
-                alert("✅ تم نشر إعلانك بنجاح!");
-                showPage('p1');
-                location.reload();
-            } catch(err) {
-                alert("حدث خطأ، حاول مرة أخرى");
-                btn.innerText = "نشر الإعلان الآن";
-                btn.disabled = false;
-            }
+            await addDoc(window.colRef, {
+                sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
+                desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
+                curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value,
+                status: 'pending' 
+            });
+            alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
         };
         reader.readAsDataURL(file);
     };
