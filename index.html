@@ -4,22 +4,13 @@
     <meta charset="UTF-8">
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
+    <!-- كود الربط السحابي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE",
-            authDomain: "gg55-9a884.firebaseapp.com",
-            projectId: "gg55-9a884",
-            storageBucket: "gg55-9a884.firebasestorage.app",
-            messagingSenderId: "82936706158",
-            appId: "1:82936706158:web:36e00ec48e134f5205227f"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
-        window.colRef = collection(db, "ads");
+        const firebaseConfig = { apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE", authDomain: "gg55-9a884.firebaseapp.com", projectId: "gg55-9a884", storageBucket: "gg55-9a884.firebasestorage.app", messagingSenderId: "82936706158", appId: "1:82936706158:web:36e00ec48e134f5205227f" };
+        window.db = getFirestore(initializeApp(firebaseConfig));
+        window.colRef = collection(window.db, "ads");
     </script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #ffffff; margin: 0; padding: 20px; }
@@ -87,7 +78,6 @@
 
 <script type="module">
     import { getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
     const data = {
         "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]},
         "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
@@ -103,7 +93,6 @@
     
     const mainGrid = document.getElementById('mainGrid');
     const iCat = document.getElementById('iCat');
-
     for(let cat in data) {
         mainGrid.innerHTML += `<div class="card" onclick="openP2('${cat}')"><div class="emoji">${data[cat].e}</div><h3>${cat}</h3></div>`;
         iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -126,45 +115,34 @@
     window.openP3 = async (sub) => {
         document.getElementById('subName').innerText = sub;
         const list = document.getElementById('adList');
-        const querySnapshot = await getDocs(window.colRef);
+        const snap = await getDocs(window.colRef);
         list.innerHTML = "";
-        querySnapshot.forEach((doc) => {
+        snap.forEach((doc) => {
             const a = doc.data();
-            if(a.sub == sub) {
-                list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
-            }
+            if(a.sub == sub) list.innerHTML += `<div class="ad-box"><img src="${a.img}" class="ad-img"><h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
         });
         showPage('p3');
     };
 
     window.delAd = async (id, pass) => {
-        const inputPass = prompt("أدخل كلمة سر الحذف الخاصة بهذا الإعلان:");
-        if(inputPass === pass) {
-            await deleteDoc(doc(window.db, "ads", id));
-            location.reload();
-        } else { alert("كلمة سر خاطئة!"); }
+        const p = prompt("كلمة سر الحذف:");
+        if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); }
     };
 
     window.publish = () => {
         const file = document.getElementById('iImg').files[0];
         const fields = ['iName', 'iTitle', 'iCat', 'iSub', 'iPrice', 'iCity', 'iDesc', 'iPass'];
         for (let f of fields) { if(!document.getElementById(f).value) { alert("يرجى ملء جميع الحقول!"); return; } }
-        if(!file) { alert("يرجى اختيار صورة!"); return; }
-        
+        if(!file) { alert("يجب اختيار صورة!"); return; }
         const reader = new FileReader();
         reader.onload = async (e) => {
             await addDoc(window.colRef, {
-                sub: document.getElementById('iSub').value,
-                title: document.getElementById('iTitle').value,
-                desc: document.getElementById('iDesc').value,
-                price: document.getElementById('iPrice').value,
-                curr: document.getElementById('iCurr').value,
-                img: e.target.result,
-                pass: document.getElementById('iPass').value
+                sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
+                desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
+                curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value
             });
-            alert("✅ تم نشر إعلانك بنجاح في مزاد دمشق!");
-            location.reload();
-        }
+            alert("✅ تم النشر!"); location.reload();
+        };
         reader.readAsDataURL(file);
     };
 
