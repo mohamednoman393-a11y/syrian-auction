@@ -6,7 +6,7 @@
     <title>مزاد دمشق 🇸🇾</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
         const firebaseConfig = { apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE", authDomain: "gg55-9a884.firebaseapp.com", projectId: "gg55-9a884", storageBucket: "gg55-9a884.firebasestorage.app", messagingSenderId: "82936706158", appId: "1:82936706158:web:36e00ec48e134f5205227f" };
         window.db = getFirestore(initializeApp(firebaseConfig));
         window.colRef = collection(window.db, "ads");
@@ -34,15 +34,19 @@
         <button style="width:auto; padding: 10px 30px;" onclick="showPage('pAdd')">+ نشر إعلان جديد</button>
     </header>
     <div class="grid" id="mainGrid"></div>
+    <div style="text-align:center; margin-top:50px;">
+        <span style="cursor:pointer; color:#888; font-size:12px;" onclick="checkAdmin()">لوحة التحكم</span>
+    </div>
 </div>
 
 <div id="pAdd" class="page">
     <button style="background:#555" onclick="showPage('p1')">← إلغاء</button>
-    <h3>إضافة إعلان جديد (يمكنك اختيار حتى 3 صور)</h3>
+    <h3>إضافة إعلان جديد</h3>
     <input type="text" id="iName" placeholder="الاسم الكامل">
     <input type="text" value="+963" disabled>
     <input type="tel" id="iPhone" placeholder="رقم الهاتف">
     <input type="text" id="iTitle" placeholder="عنوان الإعلان">
+    <p>يمكنك اختيار حتى 3 صور:</p>
     <input type="file" id="iImg1" accept="image/*">
     <input type="file" id="iImg2" accept="image/*">
     <input type="file" id="iImg3" accept="image/*">
@@ -64,20 +68,12 @@
     <button onclick="publish()">نشر الإعلان الآن</button>
 </div>
 
-<div id="p2" class="page">
-    <button style="background:#555" onclick="showPage('p1')">← رجوع</button>
-    <h2 id="catName"></h2>
-    <div class="grid" id="subGrid"></div>
-</div>
-
-<div id="p3" class="page">
-    <button style="background:#555" onclick="showPage('p2')">← رجوع للفروع</button>
-    <h2 id="subName"></h2>
-    <div id="adList"></div>
-</div>
+<div id="p2" class="page"><button style="background:#555" onclick="showPage('p1')">← رجوع</button><h2 id="catName"></h2><div class="grid" id="subGrid"></div></div>
+<div id="p3" class="page"><button style="background:#555" onclick="showPage('p2')">← رجوع</button><h2 id="subName"></h2><div id="adList"></div></div>
+<div id="pAdmin" class="page"><button style="background:#555" onclick="showPage('p1')">← خروج</button><h2>إعلانات قيد المراجعة</h2><div id="adminAds"></div></div>
 
 <script type="module">
-    import { getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getDocs, deleteDoc, doc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     const data = {
         "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]},
         "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
@@ -115,26 +111,20 @@
     window.openP3 = async (sub) => {
         document.getElementById('subName').innerText = sub;
         const list = document.getElementById('adList');
-        list.innerHTML = "جاري التحميل...";
         const snap = await getDocs(window.colRef);
         list.innerHTML = "";
-        snap.forEach((doc) => {
-            const a = doc.data();
-            if(a.sub == sub) {
-                let imagesHtml = a.images ? a.images.map(img => `<img src="${img}" class="ad-img">`).join('') : `<img src="${a.img}" class="ad-img">`;
-                list.innerHTML += `<div class="ad-box">${imagesHtml}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${doc.id}', '${a.pass}')">حذف الإعلان</button></div>`;
+        snap.forEach((d) => {
+            const a = d.data();
+            if(a.sub == sub && a.status === 'approved') {
+                let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
+                list.innerHTML += `<div class="ad-box">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف الإعلان</button></div>`;
             }
         });
         showPage('p3');
     };
 
-    window.delAd = async (id, pass) => {
-        const p = prompt("كلمة سر الحذف:");
-        if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); }
-    };
-
     window.publish = async () => {
-        const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(file); });
+        const getBase64 = (file) => new Promise(res => { const reader = new FileReader(); reader.onload = () => res(reader.result); reader.readAsDataURL(file); });
         const imgs = [];
         if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
         if(document.getElementById('iImg2').files[0]) imgs.push(await getBase64(document.getElementById('iImg2').files[0]));
@@ -143,17 +133,41 @@
         if(imgs.length === 0) { alert("يجب اختيار صورة واحدة على الأقل!"); return; }
 
         await addDoc(window.colRef, {
-            sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
+            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value,
+            title: document.getElementById('iTitle').value, sub: document.getElementById('iSub').value,
             desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
-            curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value
+            curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
+            status: 'pending'
         });
-        alert("تم النشر!"); location.reload();
+        alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
     };
 
-    window.showPage = (id) => {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    window.checkAdmin = () => {
+        if(prompt("كلمة سر الإدارة:") === "2008n2008M") {
+            showPage('pAdmin');
+            const container = document.getElementById('adminAds');
+            getDocs(window.colRef).then(snap => {
+                container.innerHTML = "";
+                snap.forEach(d => {
+                    const a = d.data();
+                    if(a.status === 'pending') {
+                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
+                        container.innerHTML += `<div class="ad-box">
+                            <h3>${a.title}</h3>${imgs}
+                            <p>الاسم: ${a.name}</p><p>الهاتف: ${a.phone}</p><p>الوصف: ${a.desc}</p>
+                            <button onclick="updateAd('${d.id}', 'approved')">موافقة ونشر</button>
+                            <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض</button>
+                        </div>`;
+                    }
+                });
+            });
+        } else alert("كلمة سر خاطئة!");
     };
+
+    window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
+    window.rejectAd = async (id) => { const r = prompt("سبب الرفض:"); if(r) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: r }); location.reload(); } };
+    window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); } };
+    window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
 </script>
 </body>
 </html>
