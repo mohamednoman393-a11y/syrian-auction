@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
-    <!-- ميزة PWA: التوافق كمتصفح تطبيق -->
     <meta name="theme-color" content="#121212">
     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi1YjZgdmJINinINmE2KjZg9i02YjYp9iqIiwic2hvcnRfbmFtZSI6IsmE2KjZg9i02YjYp9iqIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIn0=">
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -41,36 +39,23 @@
         <button style="width:auto; padding: 10px 30px;" onclick="showPage('pAdd')">+ نشر إعلان جديد</button>
     </header>
     <div class="grid" id="mainGrid"></div>
-    <div style="text-align:center; margin-top:50px;">
-        <span style="cursor:pointer; color:#888; font-size:12px;" onclick="checkAdmin()">لوحة التحكم</span>
-    </div>
+    <div style="text-align:center; margin-top:50px;"><span style="cursor:pointer; color:#888; font-size:12px;" onclick="checkAdmin()">لوحة التحكم</span></div>
 </div>
 
 <div id="pAdd" class="page">
     <button style="background:#555" onclick="showPage('p1')">← إلغاء</button>
     <h3>إضافة إعلان جديد</h3>
     <input type="text" id="iName" placeholder="الاسم الكامل">
-    <input type="text" value="+963" disabled>
     <input type="tel" id="iPhone" placeholder="رقم الهاتف">
     <input type="text" id="iTitle" placeholder="عنوان الإعلان">
-    <p>يمكنك اختيار حتى 3 صور:</p>
-    <input type="file" id="iImg1" accept="image/*">
-    <input type="file" id="iImg2" accept="image/*">
-    <input type="file" id="iImg3" accept="image/*">
+    <input type="file" id="iImg1"><input type="file" id="iImg2"><input type="file" id="iImg3">
     <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
     <select id="iSub"><option value="">اختر المنتج</option></select>
     <div style="display:flex; gap:5px;">
         <input type="number" id="iPrice" placeholder="السعر">
         <select id="iCurr"><option value="$">دولار ($)</option><option value="ل.س">ليرة سورية</option></select>
     </div>
-    <select id="iCity">
-        <option value="">اختر المحافظة</option>
-        <option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option>
-        <option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>إدلب</option>
-        <option>دير الزور</option><option>الرقة</option><option>الحسكة</option><option>درعا</option>
-        <option>السويداء</option><option>القنيطرة</option>
-    </select>
-    <input type="password" id="iPass" placeholder="كلمة سر الحذف (خاصة بك)">
+    <input type="password" id="iPass" placeholder="كلمة سر الحذف">
     <textarea id="iDesc" placeholder="وصف الإعلان"></textarea>
     <button onclick="publish()">نشر الإعلان الآن</button>
 </div>
@@ -82,18 +67,13 @@
 <script type="module">
     import { getDocs, deleteDoc, doc, addDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     const data = {
-        "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]},
-        "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
-        "إلكترونيات": {e: "📱", subs: ["موبايلات", "لابتوبات"]},
-        "أثاث": {e: "🛋️", subs: ["غرف نوم", "مطابخ"]},
-        "حيوانات": {e: "🐾", subs: ["طيور", "كلاب", "قطط"]},
-        "أغذية": {e: "🍎", subs: ["خضروات", "فواكه"]},
-        "خدمات": {e: "🛠️", subs: ["صيانة", "نقل"]},
-        "أزياء": {e: "👕", subs: ["ملابس", "ساعات"]},
-        "ترفيه": {e: "🎮", subs: ["ألعاب", "معدات"]},
-        "صناعة": {e: "⚙️", subs: ["حديد", "أخشاب"]}
+        "عقارات": {e: "🏠", subs: ["شقق", "فلل", "أراضي"]}, "مركبات": {e: "🚗", subs: ["سيارات", "شاحنات", "دراجات"]},
+        "إلكترونيات": {e: "📱", subs: ["موبايلات", "لابتوبات"]}, "أثاث": {e: "🛋️", subs: ["غرف نوم", "مطابخ"]},
+        "حيوانات": {e: "🐾", subs: ["طيور", "كلاب", "قطط"]}, "أغذية": {e: "🍎", subs: ["خضروات", "فواكه"]},
+        "خدمات": {e: "🛠️", subs: ["صيانة", "نقل"]}, "أزياء": {e: "👕", subs: ["ملابس", "ساعات"]},
+        "ترفيه": {e: "🎮", subs: ["ألعاب", "معدات"]}, "صناعة": {e: "⚙️", subs: ["حديد", "أخشاب"]}
     };
-    
+
     const mainGrid = document.getElementById('mainGrid');
     const iCat = document.getElementById('iCat');
     for(let cat in data) {
@@ -102,15 +82,13 @@
     }
 
     window.updateSubs = () => {
-        const subSelect = document.getElementById('iSub');
-        subSelect.innerHTML = "";
-        data[iCat.value].subs.forEach(s => subSelect.innerHTML += `<option value="${s}">${s}</option>`);
+        const s = document.getElementById('iSub'); s.innerHTML = "";
+        data[iCat.value].subs.forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`);
     };
 
     window.openP2 = (cat) => {
         document.getElementById('catName').innerText = cat;
-        const grid = document.getElementById('subGrid');
-        grid.innerHTML = "";
+        const grid = document.getElementById('subGrid'); grid.innerHTML = "";
         data[cat].subs.forEach(s => grid.innerHTML += `<div class="card" onclick="openP3('${s}')"><h4>${s}</h4></div>`);
         showPage('p2');
     };
@@ -120,44 +98,32 @@
         const list = document.getElementById('adList');
         const snap = await getDocs(window.colRef);
         list.innerHTML = "";
-        snap.forEach((d) => {
+        snap.forEach(d => {
             const a = d.data();
             if(a.sub == sub && a.status === 'approved') {
+                updateDoc(doc(window.db, "ads", d.id), { views: increment(1) });
                 let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                // إضافة تاريخ النشر (ميزة 5)
                 let date = a.timestamp ? new Date(a.timestamp.seconds * 1000).toLocaleDateString('ar-SY') : "منذ فترة";
-                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr} | التاريخ: ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button></div>`;
+                list.innerHTML += `<div class="ad-box ${a.featured ? 'featured' : ''}">${imgs}<h4>${a.title}</h4><p>${a.desc}</p><small>السعر: ${a.price} ${a.curr} | 👀 ${a.views || 0} | ${date}</small><br><button class="del-btn" onclick="delAd('${d.id}', '${a.pass}')">حذف</button> <button onclick="editAd('${d.id}', '${a.pass}')">تعديل</button> <button onclick="shareAd('${a.title}')">مشاركة</button></div>`;
             }
         });
         showPage('p3');
     };
 
-    // ميزة التعديل (ميزة 2)
-    window.editAd = async (id, oldPass) => {
-        const p = prompt("أدخل كلمة سر الإعلان للتعديل:");
-        if(p == oldPass) {
-            const newDesc = prompt("أدخل الوصف الجديد:");
-            if(newDesc) { await updateDoc(doc(window.db, "ads", id), { desc: newDesc }); location.reload(); }
-        } else alert("كلمة سر خاطئة!");
-    };
-
     window.publish = async () => {
-        const getBase64 = (file) => new Promise(res => { const reader = new FileReader(); reader.onload = () => res(reader.result); reader.readAsDataURL(file); });
+        const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
         const imgs = [];
         if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
         if(document.getElementById('iImg2').files[0]) imgs.push(await getBase64(document.getElementById('iImg2').files[0]));
         if(document.getElementById('iImg3').files[0]) imgs.push(await getBase64(document.getElementById('iImg3').files[0]));
         
-        if(imgs.length === 0) { alert("يجب اختيار صورة واحدة على الأقل!"); return; }
-
         await addDoc(window.colRef, {
-            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value,
-            title: document.getElementById('iTitle').value, sub: document.getElementById('iSub').value,
-            desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
+            name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
+            sub: document.getElementById('iSub').value, desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
             curr: document.getElementById('iCurr').value, images: imgs, pass: document.getElementById('iPass').value,
-            status: 'pending', timestamp: new Date()
+            status: 'pending', views: 0, featured: false, timestamp: new Date()
         });
-        alert("✅ تم إرسال إعلانك للمراجعة!"); location.reload();
+        alert("تم الإرسال للمراجعة!"); location.reload();
     };
 
     window.checkAdmin = () => {
@@ -169,29 +135,24 @@
                 snap.forEach(d => {
                     const a = d.data();
                     if(a.status === 'pending') {
-                        let imgs = a.images ? a.images.map(i => `<img src="${i}" class="ad-img">`).join('') : "";
-                        container.innerHTML += `<div class="ad-box">
-                            <h3>${a.title}</h3>${imgs}
-                            <p>الاسم: ${a.name}</p><p>الهاتف: ${a.phone}</p><p>الوصف: ${a.desc}</p>
-                            <button onclick="updateAd('${d.id}', 'approved')">موافقة ونشر</button>
-                            <button style="background:#c0392b" onclick="rejectAd('${d.id}')">رفض</button>
-                        </div>`;
+                        container.innerHTML += `<div class="ad-box"><h3>${a.title}</h3>
+                        <button onclick="updateAd('${d.id}', 'approved')">قبول</button>
+                        <button onclick="toggleFeatured('${d.id}', ${a.featured})">تبديل التميز: ${a.featured ? 'مميز' : 'عادي'}</button>
+                        <button onclick="rejectAd('${d.id}')">رفض</button></div>`;
                     }
                 });
             });
-        } else alert("كلمة سر خاطئة!");
+        }
     };
 
-    window.searchAds = () => {
-        const input = document.getElementById('searchInput').value.toUpperCase();
-        const boxes = document.querySelectorAll('.ad-box');
-        boxes.forEach(b => b.style.display = b.innerText.toUpperCase().includes(input) ? "" : "none");
-    };
-
+    window.toggleFeatured = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { featured: !status }); location.reload(); };
+    window.editAd = async (id, oldPass) => { const p = prompt("كلمة السر:"); if(p == oldPass) { const n = prompt("الوصف الجديد:"); if(n) await updateDoc(doc(window.db, "ads", id), { desc: n }); location.reload(); } };
     window.updateAd = async (id, status) => { await updateDoc(doc(window.db, "ads", id), { status: status }); location.reload(); };
-    window.rejectAd = async (id) => { const r = prompt("سبب الرفض:"); if(r) { await updateDoc(doc(window.db, "ads", id), { status: 'rejected', reason: r }); location.reload(); } };
-    window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); } };
+    window.rejectAd = async (id) => { await updateDoc(doc(window.db, "ads", id), { status: 'rejected' }); location.reload(); };
+    window.delAd = async (id, pass) => { const p = prompt("كلمة سر الحذف:"); if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } };
+    window.shareAd = (title) => { if(navigator.share) navigator.share({title: title, url: window.location.href}); };
     window.showPage = (id) => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); };
+    window.searchAds = () => { const input = document.getElementById('searchInput').value.toUpperCase(); document.querySelectorAll('.ad-box').forEach(b => b.style.display = b.innerText.toUpperCase().includes(input) ? "" : "none"); };
 </script>
 </body>
 </html>
