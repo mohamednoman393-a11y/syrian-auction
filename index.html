@@ -45,18 +45,18 @@
 <div id="pAdd" class="page">
     <button style="background:#555" onclick="showPage('p1')">← إلغاء</button>
     <h3>إضافة إعلان جديد</h3>
-    <input type="text" id="iName" placeholder="الاسم الكامل">
-    <input type="tel" id="iPhone" placeholder="رقم الهاتف">
-    <input type="text" id="iTitle" placeholder="عنوان الإعلان">
+    <input type="text" id="iName" placeholder="الاسم الكامل" required>
+    <input type="tel" id="iPhone" placeholder="رقم الهاتف" required>
+    <input type="text" id="iTitle" placeholder="عنوان الإعلان" required>
     <input type="file" id="iImg1"><input type="file" id="iImg2"><input type="file" id="iImg3">
-    <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
-    <select id="iSub"><option value="">اختر المنتج</option></select>
+    <select id="iCat" onchange="updateSubs()" required><option value="">اختر الفئة</option></select>
+    <select id="iSub" required><option value="">اختر المنتج</option></select>
     <div style="display:flex; gap:5px;">
-        <input type="number" id="iPrice" placeholder="السعر">
+        <input type="number" id="iPrice" placeholder="السعر" required>
         <select id="iCurr"><option value="$">دولار ($)</option><option value="ل.س">ليرة سورية</option></select>
     </div>
-    <input type="password" id="iPass" placeholder="كلمة سر الحذف">
-    <textarea id="iDesc" placeholder="وصف الإعلان"></textarea>
+    <input type="password" id="iPass" placeholder="كلمة سر الحذف" required>
+    <textarea id="iDesc" placeholder="وصف الإعلان" required></textarea>
     <button onclick="publish()">نشر الإعلان الآن</button>
 </div>
 
@@ -111,12 +111,19 @@
     };
 
     window.publish = async () => {
+        // التحقق من الحقول المطلوبة
+        if(!document.getElementById('iName').value || !document.getElementById('iPhone').value || !document.getElementById('iTitle').value || !document.getElementById('iCat').value || !document.getElementById('iPrice').value || !document.getElementById('iPass').value) {
+            alert("يرجى تعبئة جميع الحقول المطلوبة!"); return;
+        }
+
         const getBase64 = (f) => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
         const imgs = [];
         if(document.getElementById('iImg1').files[0]) imgs.push(await getBase64(document.getElementById('iImg1').files[0]));
         if(document.getElementById('iImg2').files[0]) imgs.push(await getBase64(document.getElementById('iImg2').files[0]));
         if(document.getElementById('iImg3').files[0]) imgs.push(await getBase64(document.getElementById('iImg3').files[0]));
         
+        if(imgs.length === 0) { alert("يجب اختيار صورة واحدة على الأقل!"); return; }
+
         await addDoc(window.colRef, {
             name: document.getElementById('iName').value, phone: document.getElementById('iPhone').value, title: document.getElementById('iTitle').value,
             sub: document.getElementById('iSub').value, desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
