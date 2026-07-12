@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="description" content="مزاد دمشق - أكبر منصة إعلانات ومزادات في المحافظات السورية">
     <title>مزاد دمشق 🇸🇾</title>
-    <!-- كود الربط السحابي -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -61,7 +60,7 @@
     </select>
     <input type="password" id="iPass" placeholder="كلمة سر الحذف (خاصة بك)">
     <textarea id="iDesc" placeholder="وصف الإعلان"></textarea>
-    <button onclick="publish()">نشر الإعلان الآن</button>
+    <button id="btnPublish" onclick="publish()">نشر الإعلان الآن</button>
 </div>
 
 <div id="p2" class="page">
@@ -115,6 +114,7 @@
     window.openP3 = async (sub) => {
         document.getElementById('subName').innerText = sub;
         const list = document.getElementById('adList');
+        list.innerHTML = "جاري التحميل...";
         const snap = await getDocs(window.colRef);
         list.innerHTML = "";
         snap.forEach((doc) => {
@@ -129,19 +129,32 @@
         if(p == pass) { await deleteDoc(doc(window.db, "ads", id)); location.reload(); } else { alert("خطأ!"); }
     };
 
-    window.publish = () => {
+    window.publish = async () => {
         const file = document.getElementById('iImg').files[0];
         const fields = ['iName', 'iTitle', 'iCat', 'iSub', 'iPrice', 'iCity', 'iDesc', 'iPass'];
         for (let f of fields) { if(!document.getElementById(f).value) { alert("يرجى ملء جميع الحقول!"); return; } }
         if(!file) { alert("يجب اختيار صورة!"); return; }
+        
+        const btn = document.getElementById('btnPublish');
+        btn.innerText = "جاري النشر...";
+        btn.disabled = true;
+
         const reader = new FileReader();
         reader.onload = async (e) => {
-            await addDoc(window.colRef, {
-                sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
-                desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
-                curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value
-            });
-            alert("✅ تم النشر!"); location.reload();
+            try {
+                await addDoc(window.colRef, {
+                    sub: document.getElementById('iSub').value, title: document.getElementById('iTitle').value,
+                    desc: document.getElementById('iDesc').value, price: document.getElementById('iPrice').value,
+                    curr: document.getElementById('iCurr').value, img: e.target.result, pass: document.getElementById('iPass').value
+                });
+                alert("✅ تم نشر إعلانك بنجاح!");
+                showPage('p1');
+                location.reload();
+            } catch(err) {
+                alert("حدث خطأ، حاول مرة أخرى");
+                btn.innerText = "نشر الإعلان الآن";
+                btn.disabled = false;
+            }
         };
         reader.readAsDataURL(file);
     };
