@@ -1,66 +1,72 @@
-<header style="padding: 20px; border-bottom: 1px solid #333; background: #1a1a1a;">
-    <h2 style="margin: 0;">مزاد دمشق</h2>
-</header>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مزاد دمشق</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 15px; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .box { background: #1e1e1e; padding: 15px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; }
+        .box:hover { background: #333; border-color: #bb86fc; }
+        .icon { display: block; font-size: 24px; margin-bottom: 5px; }
+        h3 { color: #bb86fc; border-right: 4px solid #bb86fc; padding-right: 10px; }
+    </style>
+</head>
+<body>
 
-<div style="padding: 20px;">
+    <header style="text-align: center; padding: 20px;"><h1>مزاد دمشق</h1></header>
 
-    <!-- قسم العقارات -->
-    <h3 style="color: #ff9800; border-right: 4px solid #ff9800; padding-right: 10px;">عقارات</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <div class="box">🏠 سكني للبيع</div>
-        <div class="box">🏗️ أراضي</div>
-        <div class="box">🛋️ أثاث</div>
-        <div class="box">🔑 سكني للإيجار</div>
-        <div class="box">🏢 تجاري للبيع</div>
+    <h3>عقارات</h3>
+    <div class="grid-container">
+        <div class="box"><span class="icon">🏠</span>سكني للبيع</div>
+        <div class="box"><span class="icon">🏗️</span>أراضي</div>
+        <div class="box"><span class="icon">🛋️</span>أثاث</div>
+        <div class="box"><span class="icon">🔑</span>سكني للإيجار</div>
+        <div class="box"><span class="icon">🏢</span>تجاري للبيع</div>
     </div>
 
-    <!-- قسم المركبات -->
-    <h3 style="color: #2196f3; border-right: 4px solid #2196f3; padding-right: 10px;">المركبات</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <div class="box">🚗 سيارات</div>
-        <div class="box">🏪 معارض سيارات</div>
-        <div class="box">📅 إيجار سيارات</div>
-        <div class="box">🏍️ دراجات</div>
-        <div class="box">⚙️ قطع غيار</div>
-        <div class="box">🛠️ خدمات سيارات</div>
-        <div class="box">🚤 أدوات بحرية</div>
-        <div class="box">🚜 معدات ثقيلة</div>
+    <h3>مركبات</h3>
+    <div class="grid-container">
+        <div class="box"><span class="icon">🚗</span>سيارات</div>
+        <div class="box"><span class="icon">🏪</span>معارض سيارات</div>
+        <div class="box"><span class="icon">📅</span>إيجار سيارات</div>
+        <div class="box"><span class="icon">🏍️</span>دراجات</div>
+        <div class="box"><span class="icon">⚙️</span>قطع غيار</div>
+        <div class="box"><span class="icon">🛠️</span>خدمات سيارات</div>
+        <div class="box"><span class="icon">🚤</span>أدوات بحرية</div>
+        <div class="box"><span class="icon">🚜</span>معدات ثقيلة</div>
     </div>
 
-    <!-- قسم الخدمات -->
-    <h3 style="color: #4caf50; border-right: 4px solid #4caf50; padding-right: 10px;">خدمات</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <div class="box">🐜 مكافحة حشرات</div>
-        <div class="box">❄️ تكييف</div>
-        <div class="box">🧹 تنظيف</div>
-        <div class="box">🎉 مناسبات</div>
-        <div class="box">🏗️ مقاولات</div>
-        <div class="box">🚚 نقل أثاث</div>
-        <div class="box">📦 توصيل</div>
-        <div class="box">🎨 ديكور وتصميم</div>
-        <div class="box">🌳 حدائق وزراعة</div>
-        <div class="box">🎓 تعليم</div>
-        <div class="box">📈 بيع مشاريع</div>
-        <div class="box">🔧 صيانة</div>
-        <div class="box">💼 خدمات تجارية</div>
+    <h3>خدمات</h3>
+    <div class="grid-container">
+        <div class="box"><span class="icon">🐜</span>مبيدات وحشرات</div>
+        <div class="box"><span class="icon">❄️</span>تكييف</div>
+        <div class="box"><span class="icon">🧹</span>تنظيف</div>
+        <div class="box"><span class="icon">🎉</span>مناسبات</div>
+        <div class="box"><span class="icon">🏗️</span>مقاولات</div>
+        <div class="box"><span class="icon">🚚</span>نقل أثاث</div>
+        <div class="box"><span class="icon">📦</span>توصيل</div>
+        <div class="box"><span class="icon">🎨</span>ديكور وتصميم</div>
+        <div class="box"><span class="icon">🌳</span>حدائق وزراعة</div>
+        <div class="box"><span class="icon">🎓</span>تعليم</div>
+        <div class="box"><span class="icon">📈</span>بيع مشاريع</div>
+        <div class="box"><span class="icon">🔧</span>صيانة</div>
+        <div class="box"><span class="icon">💼</span>خدمات تجارية</div>
     </div>
 
-    <!-- قسم الإلكترونيات -->
-    <h3 style="color: #9c27b0; border-right: 4px solid #9c27b0; padding-right: 10px;">إلكترونيات</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <div class="box">📱 هواتف</div>
-        <div class="box">💻 إلكترونيات</div>
-        <div class="box">🏠 أجهزة منزلية</div>
-        <div class="box">📷 كاميرات</div>
-        <div class="box">🎮 ألعاب إلكترونية</div>
+    <h3>إلكترونيات</h3>
+    <div class="grid-container">
+        <div class="box" onclick="window.location.href='phones.html'"><span class="icon">📱</span>هواتف</div>
+        <div class="box"><span class="icon">💻</span>إلكترونيات</div>
+        <div class="box"><span class="icon">🏠</span>أجهزة منزلية</div>
+        <div class="box"><span class="icon">📷</span>كاميرات</div>
+        <div class="box"><span class="icon">🎮</span>ألعاب</div>
     </div>
 
-    <!-- قسم الحيوانات -->
-    <h3 style="color: #f44336; border-right: 4px solid #f44336; padding-right: 10px;">الحيوانات</h3>
-    <div class="box">🐾 حيوانات وطيور</div>
-</div>
+    <h3>حيوانات</h3>
+    <div class="grid-container">
+        <div class="box"><span class="icon">🐾</span>حيوانات وطيور</div>
+    </div>
 
-<style>
-    .box { background: #1e1e1e; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center; cursor: pointer; }
-    .box:hover { background: #333; }
-</style>
+</body>
+</html>
