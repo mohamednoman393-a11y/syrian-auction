@@ -6,82 +6,96 @@
     <style>
         :root { --bg: #121212; --text: #fff; --accent: #bb86fc; }
         body.light { --bg: #f5f5f5; --text: #121212; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 80px; transition: 0.3s; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 80px; }
         .page { display: none; padding: 15px; }
         .active { display: block; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .box { background: #1e1e1e; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid #333; }
         .navbar { position: fixed; bottom: 0; width: 100%; background: #1e1e1e; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; background: #333; border: none; color: white; border-radius: 5px; }
+        .ad-item { background: #333; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <!-- 1. الرئيسية -->
     <div id="home" class="page active">
-        <h1>مزاد دمشق</h1>
-        <div id="categories-container" class="grid"></div>
+        <h1>الرئيسية</h1>
+        <div id="cats-grid" class="grid"></div>
     </div>
     
-    <div id="add-ad" class="page">
-        <h2>إضافة إعلان</h2>
-        <form id="adForm" onsubmit="return false">
-            <input type="text" id="adName" placeholder="اسم الإعلان" required>
-            <input type="text" id="phone" placeholder="رقم الهاتف" required>
-            <select id="city" required>
-                <option value="">اختر المحافظة</option>
-                <option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>إدلب</option><option>دير الزور</option><option>الرقة</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option>
-            </select>
-            <input type="number" id="price" placeholder="السعر" required>
-            <select id="currency"><option>دولار</option><option>ليرة سورية</option></select>
-            <input type="file" id="images" multiple accept="image/*" required>
-            <button onclick="submitAd()" style="background:var(--accent); width:100%; padding:15px; border:none; border-radius:5px; cursor:pointer;">نشر الإعلان</button>
-        </form>
+    <!-- 2. الفروع -->
+    <div id="subs" class="page">
+        <h2 id="subs-title"></h2>
+        <div id="subs-grid" class="grid"></div>
     </div>
 
+    <!-- 3. قائمة الإعلانات -->
+    <div id="ads" class="page">
+        <h2 id="ads-title">الإعلانات</h2>
+        <div id="ads-list"></div>
+    </div>
+
+    <!-- 4. تفاصيل الإعلان -->
+    <div id="details" class="page">
+        <h2>تفاصيل الإعلان</h2>
+        <div class="box"><h3>إعلان تجريبي</h3><p>مواصفات السلعة...</p></div>
+    </div>
+
+    <!-- 5. الإعدادات -->
     <div id="settings" class="page">
         <h2>الإعدادات</h2>
-        <button onclick="document.body.classList.toggle('light')">تبديل وضع الشاشة (أسود/أبيض)</button>
-        <button onclick="alert('اللغة الحالية: العربية')">تغيير اللغة (عربي/English)</button>
-        <div onclick="openAdmin()" style="margin-top:50px; font-weight:bold; cursor:pointer; color:var(--accent);">M - غرفة التحكم</div>
+        <button onclick="document.body.classList.toggle('light')">تبديل اللون (أسود/أبيض)</button>
+        <button onclick="alert('اللغة: العربية')">تغيير اللغة</button>
+        <div onclick="openAdmin()" style="color:var(--accent); cursor:pointer; margin-top:20px;">M - غرفة التحكم</div>
     </div>
 
     <div class="navbar">
-        <div onclick="show('home')" style="cursor:pointer;">🏠 الرئيسية</div>
-        <div onclick="show('add-ad')" style="cursor:pointer;">➕ إضافة</div>
-        <div onclick="show('settings')" style="cursor:pointer;">⚙️ الإعدادات</div>
+        <div onclick="show('home')">🏠 الرئيسية</div>
+        <div onclick="show('add-ad')">➕ إضافة</div>
+        <div onclick="show('settings')">⚙️ الإعدادات</div>
     </div>
 
     <script>
         const cats = {
-            "سكني للبيع": "🏠", "أراضي": "🏗️", "أثاث": "🛋️", "سكني للإيجار": "🔑", "تجاري للبيع": "🏢", 
-            "تجاري للإيجار": "🏬", "سيارات": "🚗", "معارض سيارات": "🏪", "إيجار سيارات": "📅", "دراجات": "🏍️", 
-            "قطع غيار": "⚙️", "خدمات سيارات": "🛠️", "أدوات بحرية": "🚤", "معدات ثقيلة": "🚜", "مبيدات حشرات": "🐜", 
-            "تكييف": "❄️", "تنظيف": "🧹", "مناسبات": "🎉", "مقاولات": "🏗️", "نقل أثاث": "🚚", "توصيل": "📦", 
-            "ديكور": "🎨", "حدائق": "🌳", "تعليم": "🎓", "بيع مشاريع": "📈", "صيانة": "🔧", "خدمات تجارية": "💼", 
-            "هواتف": "📱", "إلكترونيات": "💻", "أجهزة منزلية": "🏠", "حيوانات": "🐾"
+            "سكني للبيع":"🏠", "أراضي":"🏗️", "أثاث":"🛋️", "سكني للإيجار":"🔑", "تجاري للبيع":"🏢", 
+            "تجاري للإيجار":"🏬", "سيارات":"🚗", "معارض سيارات":"🏪", "إيجار سيارات":"📅", "دراجات":"🏍️", 
+            "قطع غيار":"⚙️", "خدمات سيارات":"🛠️", "أدوات بحرية":"🚤", "معدات ثقيلة":"🚜", "مبيدات حشرات":"🐜", 
+            "تكييف":"❄️", "تنظيف":"🧹", "مناسبات":"🎉", "مقاولات":"🏗️", "نقل أثاث":"🚚", "توصيل":"📦", 
+            "ديكور":"🎨", "حدائق":"🌳", "تعليم":"🎓", "بيع مشاريع":"📈", "صيانة":"🔧", "خدمات تجارية":"💼", 
+            "هواتف":"📱", "إلكترونيات":"💻", "أجهزة منزلية":"🏠", "حيوانات":"🐾"
         };
-        
-        const container = document.getElementById('categories-container');
-        for (let name in cats) {
-            container.innerHTML += `<div class="box"><span>${cats[name]}</span><br>${name}</div>`;
+
+        // 1. بناء الرئيسية
+        const grid = document.getElementById('cats-grid');
+        for(let name in cats) {
+            grid.innerHTML += `<div class="box" onclick="openSubs('${name}')"><span>${cats[name]}</span><br>${name}</div>`;
         }
 
+        // 2. التنقل بين الصفحات
         function show(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        function submitAd() {
-            const inputs = document.querySelectorAll('input, select');
-            for(let i=0; i<inputs.length; i++) { if(!inputs[i].value) { alert("يرجى تعبئة جميع الفراغات المطلوبة"); return; } }
-            alert("إعلانك قيد المراجعة!");
-            show('home');
+        // 3. فتح الفروع
+        function openSubs(name) {
+            document.getElementById('subs-title').innerText = name;
+            const subsGrid = document.getElementById('subs-grid');
+            subsGrid.innerHTML = `<div class="box" onclick="openAds('فرع 1')">فرع 1</div><div class="box" onclick="openAds('فرع 2')">فرع 2</div>`;
+            show('subs');
         }
 
+        // 4. عرض الإعلانات
+        function openAds(subName) {
+            document.getElementById('ads-title').innerText = subName;
+            const list = document.getElementById('ads-list');
+            list.innerHTML = `<div class="ad-item" onclick="show('details')">إعلان 1 - اضغط للمشاهدة</div>`;
+            show('ads');
+        }
+
+        // 5. غرفة التحكم
         function openAdmin() {
-            const pass = prompt("أدخل كلمة السر:");
-            if(pass === "2008n2008M") alert("تم الدخول لغرفة التحكم");
-            else alert("كلمة سر خاطئة");
+            if(prompt("كلمة السر:") === "2008n2008M") alert("تم الوصول لغرفة التحكم");
         }
     </script>
 </body>
