@@ -2,94 +2,81 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مزاد دمشق | النظام المتكامل</title>
+    <title>تطبيق مزاد قطر المتكامل</title>
     <style>
-        :root { --primary: #c2185b; --bg: #121212; --card: #1e1e1e; --text: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
-        .page { display: none; padding: 15px; } .active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
-        .card:hover { border-color: var(--primary); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
-        .add-btn { background: var(--primary); width: 60px; height: 60px; border-radius: 50%; margin-top: -35px; display: flex; align-items: center; justify-content: center; font-size: 35px; color: white; box-shadow: 0 4px 15px rgba(194, 24, 91, 0.4); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; }
-        .btn-full { background: var(--primary); color: white; padding: 15px; border-radius: 8px; width: 100%; border: none; cursor: pointer; font-weight: bold; }
+        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
+        .page { display: none; }
+        .active { display: block; }
+        /* تصميم الهيدر والبحث */
+        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #333; }
+        /* شبكة الأقسام */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .card { background: #1e1e1e; border: 1px solid #333; padding: 20px; text-align: center; border-radius: 12px; }
+        /* صفحة المنتج وتفاصيله */
+        .product-card { background: #1e1e1e; padding: 15px; border-radius: 12px; margin: 10px; }
+        .action-bar { position: fixed; bottom: 0; width: 100%; display: flex; gap: 5px; background: #1a1a1a; padding: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; color: white; cursor: pointer; }
+        /* ناف بار سفلي */
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
 
-<div id="p1" class="page active">
-    <h1>مزاد دمشق 🇸🇾</h1>
-    <div class="grid" id="mainGrid"></div>
-</div>
+    <!-- 1. الشاشة الرئيسية -->
+    <div id="home" class="page active">
+        <div class="header"><span>☰</span> <h2>مزاد قطر</h2> <span>🔔 99+</span></div>
+        <div class="grid">
+            <div class="card" onclick="show('listing')">🚗 سيارات</div>
+            <div class="card" onclick="show('listing')">🏠 عقارات</div>
+            <div class="card" onclick="show('listing')">🐦 طيور</div>
+            <div class="card" onclick="show('listing')">🛠️ خدمات</div>
+        </div>
+    </div>
 
-<div id="p2" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة</button>
-    <h2 id="catName"></h2>
-    <div class="grid" id="subGrid"></div>
-</div>
+    <!-- 2. صفحة عرض القائمة (الفلاتر) -->
+    <div id="listing" class="page">
+        <div class="header"><span onclick="show('home')">⬅️ رجوع</span> <h2>الطيور</h2></div>
+        <div style="padding:10px;">
+            <input type="text" placeholder="بحث..." style="width:100%; padding:10px; border-radius:5px;">
+            <div class="grid" style="margin-top:10px;">
+                <div class="card" onclick="show('details')">🦜 كنيور</div>
+                <div class="card" onclick="show('details')">🐤 بادجي</div>
+            </div>
+        </div>
+    </div>
 
-<div id="p3" class="page">
-    <button onclick="showPage('p1')">⬅️ إلغاء</button>
-    <h2>➕ نشر إعلان جديد 📢</h2>
-    <input type="text" id="iTitle" placeholder="اسم الإعلان">
-    <input type="text" id="iCode" placeholder="الكود الشخصي (للملف)">
-    <textarea id="iDesc" placeholder="وصف المنتج"></textarea>
-    <input type="number" id="iPrice" placeholder="السعر">
-    <select id="iCurr"><option>دولار ($)</option><option>ليرة سورية (SYP)</option></select>
-    <select id="iCity"><option>اختر المحافظة 📍</option><option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
-    <input type="file" multiple accept="image/*,video/*">
-    <button class="btn-full" onclick="submitAd()">نشر الإعلان 🚀</button>
-</div>
+    <!-- 3. صفحة تفاصيل الإعلان (مع كل البيانات) -->
+    <div id="details" class="page">
+        <div class="header"><span onclick="show('listing')">⬅️ رجوع</span> <span>⭐</span></div>
+        <div style="height:250px; background:#333; margin:10px; border-radius:10px;">[معرض الصور]</div>
+        <div class="product-card">
+            <h2>الكنيور</h2>
+            <p>السعر: 650 ر.ق | 👁️ 3553 مشاهدة</p>
+            <div style="border-top:1px solid #444; padding-top:10px;">
+                <p>البائع: zolia | المتابعون: 8</p>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="btn" style="background:#25D366;">واتساب</button>
+            <button class="btn" style="background:#FF5722;">دردشة</button>
+            <button class="btn" style="background:#2196F3;">اتصال</button>
+        </div>
+    </div>
 
-<div id="p4" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة</button>
-    <h2>⚙️ غرفة التحكم (أدمن) 🛡️</h2>
-    <div id="adminPanel"></div>
-</div>
+    <!-- 4. القائمة السفلية -->
+    <nav class="nav-bottom">
+        <div onclick="show('home')">🏠 الرئيسية</div>
+        <div>🔨 مزايدة</div>
+        <div style="background:#9c27b0; padding:10px; border-radius:50%; margin-top:-40px;">+</div>
+        <div>👤 إعلاناتي</div>
+        <div>⚙️ المزيد</div>
+    </nav>
 
-<div class="nav-bar">
-    <div class="nav-item" onclick="showPage('p1')">🏠<br>الرئيسية</div>
-    <div class="nav-item add-btn" onclick="showPage('p3')">+</div>
-    <div class="nav-item" onclick="showPage('p4')">⚙️<br>الإدارة</div>
-</div>
-
-<script>
-    const data = {
-        "عقارات": ["فلل", "شقق", "أراضي سكنية", "تجارية", "زراعية", "عمارات", "مكاتب", "محلات", "شاليهات", "استراحات", "مخازن", "مزارع"],
-        "مركبات": ["سيدان", "دفع رباعي", "عائلية", "رياضية", "شاحنات", "دراجات", "قوارب", "معدات", "قطع غيار", "إكسسوارات", "لوحات", "أخرى"],
-        "إلكترونيات": ["آيفون", "أندرويد", "تابلت", "ساعات", "سماعات", "لابتوب", "كمبيوتر", "كاميرات", "مراقبة", "ألعاب", "أشرطة", "شاشات"],
-        "خدمات": ["برمجة", "تصميم", "ترجمة", "تسويق", "تنظيف", "صيانة", "شحن", "توصيل", "حفلات", "وظائف", "باحثون", "استشارات"]
-    };
-
-    function showPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    function submitAd() {
-        if(!document.getElementById('iTitle').value || !document.getElementById('iCode').value || !document.getElementById('iPrice').value || document.getElementById('iCity').value === "اختر المحافظة 📍") {
-            alert("⚠️ عذراً! الرجاء تعبئة جميع الخانات المطلوبة، بما فيها كود الملف الشخصي.");
-            return;
+    <script>
+        function show(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
-        alert("✅ تم إرسال إعلانك! سيتم مراجعته من قبل الإدارة.");
-        document.getElementById('adminPanel').innerHTML += `<div class="card">طلب: ${document.getElementById('iTitle').value}<br><button onclick="this.parentElement.remove()">موافقة ✅</button></div>`;
-        showPage('p1');
-    }
-
-    const mainGrid = document.getElementById('mainGrid');
-    for(let cat in data) {
-        mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
-    }
-
-    function openSubs(cat) {
-        document.getElementById('catName').innerText = cat;
-        const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
-        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="showPage('p1')"><h4>${sub}</h4></div>`);
-        showPage('p2');
-    }
-</script>
+    </script>
 </body>
 </html>
