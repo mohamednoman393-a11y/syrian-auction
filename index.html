@@ -6,59 +6,65 @@
     <title>مزاد دمشق | المنصة الشاملة</title>
     <style>
         :root { --primary: #c2185b; --bg: #121212; --card: #1e1e1e; --text: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 70px; }
-        /* نظام التبويب (4 صفحات) */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
         .page { display: none; padding: 15px; } .active { display: block; }
-        /* تصميم المربعات (مثل مزاد قطر) */
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .card { background: var(--card); border-radius: 15px; padding: 15px; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; }
-        /* شريط التنقل السفلي */
-        .navbar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
-        .nav-item { text-align: center; font-size: 12px; cursor: pointer; }
-        .add-btn { background: var(--primary); width: 50px; height: 50px; border-radius: 50%; margin-top: -30px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px; }
+        .card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid #333; transition: 0.3s; }
+        .card:hover { border-color: var(--primary); }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; }
+        .btn-full { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
-<!-- الصفحات -->
+<!-- الرئيسية -->
 <div id="p1" class="page active">
     <h1>مزاد دمشق 🇸🇾</h1>
-    <div class="grid" id="mainCats"></div>
+    <div class="grid" id="mainGrid"></div>
 </div>
 
+<!-- الأقسام الفرعية -->
 <div id="p2" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة</button>
-    <h2 id="catName"></h2>
+    <button onclick="showPage('p1')">⬅️ عودة للرئيسية</button>
+    <h2 id="catTitle"></h2>
     <div class="grid" id="subGrid"></div>
 </div>
 
+<!-- صفحة الإضافة -->
 <div id="p3" class="page">
-    <h2>➕ إضافة إعلان جديد</h2>
-    <input type="text" placeholder="عنوان الإعلان" style="width:90%; padding:10px;">
+    <button onclick="showPage('p1')">⬅️ إلغاء</button>
+    <h2>➕ نشر إعلان جديد</h2>
+    <input type="text" placeholder="اسم الإعلان">
+    <textarea placeholder="وصف المنتج بالتفصيل"></textarea>
+    <input type="number" placeholder="السعر">
+    <select><option>دولار ($)</option><option>ليرة سورية (SYP)</option></select>
+    <select><option>اختر المحافظة</option><option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
     <input type="file" multiple accept="image/*,video/*">
-    <button style="background:var(--primary); width:100%; padding:15px; border:none; color:white;">نشر الآن</button>
+    <button class="btn-full" onclick="showPage('p1')">نشر الإعلان</button>
 </div>
 
+<!-- الإعدادات وغرفة التحكم -->
 <div id="p4" class="page">
-    <h2>⚙️ غرفة التحكم (أدمن)</h2>
-    <div id="adminAds"></div>
+    <button onclick="showPage('p1')">⬅️ عودة</button>
+    <h2>⚙️ الإعدادات وغرفة التحكم</h2>
+    <div class="card">لوحة التحكم والموافقة على الإعلانات</div>
 </div>
 
-<!-- شريط التنقل السفلي -->
-<div class="navbar">
+<!-- التنقل السفلي -->
+<div class="nav-bar">
     <div class="nav-item" onclick="showPage('p1')">🏠<br>الرئيسية</div>
-    <div class="nav-item" onclick="alert('المزايدات الحية')">🔨<br>مزايدة</div>
-    <div class="nav-item add-btn" onclick="showPage('p3')">+</div>
-    <div class="nav-item" onclick="alert('إعلاناتي')">👤<br>إعلاناتي</div>
-    <div class="nav-item" onclick="showPage('p4')">⚙️<br>المزيد</div>
+    <div class="nav-item" onclick="showPage('p3')">➕<br>إعلان</div>
+    <div class="nav-item" onclick="showPage('p4')">⚙️<br>الإعدادات</div>
 </div>
 
 <script>
     const data = {
-        "عقارات": ["فلل", "شقق سكنية", "أراضي سكنية", "تجارية", "زراعية", "عمارات", "مكاتب", "محلات", "شاليهات", "استراحات", "مخازن", "مزارع"],
-        "مركبات": ["سيدان", "دفع رباعي", "عائلية", "رياضية", "كلاسيكية", "شاحنات", "دراجات", "قوارب", "معدات ثقيلة", "قطع غيار", "إكسسوارات", "لوحات"],
-        "إلكترونيات": ["آيفون", "أندرويد", "تابلت", "ساعات", "سماعات", "لابتوب", "كمبيوتر", "كاميرات", "مراقبة", "ألعاب", "أشرطة", "شاشات"],
-        "أثاث": ["كنب", "غرف نوم", "طعام", "مكتبي", "حدائق", "سجاد", "ستائر", "إضاءة", "لوحات", "تحف", "ديكور", "مطابخ"]
+        "عقارات": ["فلل", "شقق", "أراضي", "مكاتب", "محلات", "مخازن", "شاليهات", "مزارع", "عمارات", "أجنحة", "استراحات", "أخرى"],
+        "مركبات": ["سيدان", "دفع رباعي", "عائلية", "رياضية", "شاحنات", "دراجات", "قوارب", "معدات", "قطع غيار", "إكسسوارات", "لوحات", "أخرى"],
+        "إلكترونيات": ["آيفون", "أندرويد", "تابلت", "ساعات", "سماعات", "لابتوب", "كمبيوتر", "كاميرات", "مراقبة", "ألعاب", "شاشات", "أخرى"],
+        "خدمات": ["برمجة", "تصميم", "ترجمة", "تسويق", "تنظيف", "صيانة", "شحن", "توصيل", "حفلات", "وظائف", "باحثون", "استشارات"]
     };
 
     function showPage(id) {
@@ -66,16 +72,15 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // تعبئة البيانات
-    const mainGrid = document.getElementById('mainCats');
+    const mainGrid = document.getElementById('mainGrid');
     for(let cat in data) {
         mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
     }
 
     function openSubs(cat) {
-        document.getElementById('catName').innerText = cat;
+        document.getElementById('catTitle').innerText = cat;
         const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
-        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="alert('فتح إعلانات: ${sub}')"><h4>${sub}</h4></div>`);
+        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="showPage('p1')"><h4>${sub}</h4></div>`);
         showPage('p2');
     }
 </script>
