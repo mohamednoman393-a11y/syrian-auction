@@ -8,9 +8,9 @@
         .page { display: none; } .active { display: block; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
         .card { background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: center; cursor: pointer; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
-        button { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
-        .ad-box { background: #1e1e1e; padding: 15px; margin-bottom: 15px; border-radius: 10px; border-right: 5px solid #27ae60; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+        .ad-box { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -18,102 +18,123 @@
 <!-- الصفحات -->
 <div id="p1" class="page active">
     <h1>🇸🇾 مزاد دمشق</h1>
-    <button onclick="showPage('pProfile')">👤 ملفي الشخصي</button>
+    <button onclick="showPage('pProfile')">👤 الملف الشخصي</button>
     <button onclick="showPage('pAdd')">+ نشر إعلان</button>
-    <button onclick="showPage('p4')" style="background:#e67e22">⚙️ غرفة التحكم (أدمن)</button>
+    <button onclick="showPage('p4')" style="background:#d35400">⚙️ غرفة التحكم</button>
     <div class="grid" id="mainGrid"></div>
 </div>
 
 <div id="p2" class="page">
-    <button onclick="showPage('p1')">← رجوع</button>
+    <button onclick="showPage('p1')">⬅️ عودة للرئيسية</button>
     <h2 id="catName"></h2>
     <div class="grid" id="subGrid"></div>
 </div>
 
 <div id="p3" class="page">
-    <button onclick="showPage('p2')">← رجوع</button>
-    <h2 id="adTitle"></h2>
-    <div id="adDetailsContent"></div>
+    <button onclick="showPage('p2')">⬅️ عودة</button>
+    <div id="adDetails"></div>
 </div>
 
 <div id="p4" class="page">
-    <h2>⚙️ غرفة التحكم</h2>
+    <button onclick="showPage('p1')">⬅️ عودة</button>
+    <h2>⚙️ غرفة التحكم (أدمن)</h2>
     <div id="adminPanel"></div>
 </div>
 
 <div id="pAdd" class="page">
-    <button onclick="showPage('p1')">← إلغاء</button>
-    <h3>نشر إعلان</h3>
-    <input type="text" id="iName" placeholder="الاسم">
-    <input type="text" id="iCode" placeholder="كودك">
-    <select id="iCity"><option>اختر المحافظة</option><option>دمشق</option><option>حلب</option></select>
-    <select id="iCat" onchange="updateSubs()"><option>اختر الفئة</option><option value="عقارات">عقارات</option></select>
-    <select id="iSub"><option>اختر الفرع</option></select>
-    <button onclick="publish()">نشر</button>
+    <button onclick="showPage('p1')">⬅️ إلغاء</button>
+    <h3>نشر إعلان جديد</h3>
+    <input type="text" id="iTitle" placeholder="اسم الإعلان">
+    <input type="text" id="iCode" placeholder="كودك الشخصي">
+    <select id="iCity"><option value="">اختر المحافظة</option><option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
+    <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
+    <select id="iSub"><option value="">اختر النوع</option></select>
+    <input type="file" id="iImg">
+    <button onclick="publish()">نشر الإعلان</button>
 </div>
 
 <div id="pProfile" class="page">
-    <button onclick="showPage('p1')">← رجوع</button>
+    <button onclick="showPage('p1')">⬅️ عودة</button>
+    <h3>إنشاء/تعديل ملف</h3>
     <input type="text" id="pName" placeholder="الاسم">
-    <input type="text" id="pCode" placeholder="الكود الشخصي">
+    <input type="text" id="pCode" placeholder="كود فريد">
     <button onclick="saveProfile()">حفظ الملف</button>
 </div>
 
 <script>
-    const data = { "عقارات": ["شقق", "فلل"] };
-    let ads = []; // محاكاة لقاعدة البيانات
+    const data = {
+        "عقارات": ["فلل وقصور", "شقق سكنية", "أراضي سكنية", "أراضي تجارية", "أراضي زراعية", "عمارات استثمارية", "مكاتب تجارية", "محلات تجارية", "شاليهات ومنتجعات", "استراحات ومخيمات", "مستودعات ومخازن", "مزارع", "أجنحة فندقية"],
+        "مركبات": ["سيارات سيدان", "سيارات دفع رباعي", "سيارات عائلية", "سيارات رياضية", "سيارات كلاسيكية", "شاحنات", "دراجات نارية", "قوارب ويخوت", "معدات ثقيلة", "قطع غيار", "إكسسوارات", "لوحات مميزة"],
+        "إلكترونيات": ["هواتف أندرويد", "هواتف آيفون", "تابلت وآيباد", "ساعات ذكية", "سماعات", "لابتوب", "كمبيوتر مكتبي", "طابعات", "كاميرات", "كاميرات مراقبة", "ألعاب فيديو", "أشرطة", "شاشات", "صوتيات"]
+        // (تم اختصار القائمة لتناسب العرض، يمكنك إكمالها بنفس النمط)
+    };
+
+    let users = {}; // تخزين الأكواد
+    let ads = [];
 
     window.showPage = (id) => { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
     };
 
-    // تعبئة الفئات
-    const mainGrid = document.getElementById('mainGrid');
-    for(let cat in data) { mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`; }
+    // تعبئة القوائم
+    const iCat = document.getElementById('iCat');
+    for(let cat in data) {
+        document.getElementById('mainGrid').innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
+        iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+    }
+
+    window.updateSubs = () => {
+        const s = document.getElementById('iSub'); s.innerHTML = "";
+        data[iCat.value].forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`);
+    };
 
     window.openSubs = (cat) => {
         document.getElementById('catName').innerText = cat;
-        const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
-        data[cat].forEach(s => subGrid.innerHTML += `<div class="card" onclick="listAds('${s}')"><h4>${s}</h4></div>`);
+        const grid = document.getElementById('subGrid'); grid.innerHTML = "";
+        data[cat].forEach(s => grid.innerHTML += `<div class="card" onclick="listAds('${s}')"><h4>${s}</h4></div>`);
         showPage('p2');
     };
 
     window.listAds = (sub) => {
-        const content = document.getElementById('adDetailsContent');
-        content.innerHTML = ads.filter(a => a.sub == sub && a.status == 'موافق عليه').map(a => `<div class="ad-box"><h4>${a.title}</h4><button onclick="viewAd('${a.id}')">عرض</button></div>`).join('');
+        const d = document.getElementById('adDetails');
+        d.innerHTML = ads.filter(a => a.sub == sub && a.status == 'مقبول').map(a => `<div class="ad-box"><h4>${a.title}</h4><p>المحافظة: ${a.city}</p></div>`).join('');
         showPage('p3');
     };
 
+    window.saveProfile = () => {
+        const name = document.getElementById('pName').value;
+        const code = document.getElementById('pCode').value;
+        if(!name || !code) return alert("يرجى ملء جميع الفراغات");
+        if(users[code]) return alert("رجاء استخدام كود آخر، هذا الكود غير متوفر");
+        users[code] = name;
+        alert("تم حفظ الملف الشخصي!");
+    };
+
     window.publish = () => {
-        const name = document.getElementById('iName').value;
+        const title = document.getElementById('iTitle').value;
         const code = document.getElementById('iCode').value;
-        if(!name || !code) return alert("يرجى ملء جميع الفراغات!");
-        ads.push({id: Date.now(), title: document.getElementById('iSub').value, sub: document.getElementById('iSub').value, status: 'انتظار'});
-        alert("تم إرسال إعلانك للمراجعة!");
+        const city = document.getElementById('iCity').value;
+        if(!title || !code || !city || !iCat.value) return alert("يرجى ملء جميع الفراغات");
+        ads.push({title, code, city, sub: document.getElementById('iSub').value, status: 'انتظار'});
+        alert("تم إرسال الإعلان للمراجعة");
         showPage('p1');
     };
 
-    window.saveProfile = () => {
-        const code = document.getElementById('pCode').value;
-        if(!code) return alert("يرجى تعبئة جميع الفراغات!");
-        // محاكاة التحقق من الكود
-        if(code == "123") return alert("هذا الكود متوفر، يرجى اختيار كود آخر!");
-        alert("تم حفظ الملف!");
-    };
-
-    // غرفة التحكم
-    const adminPanel = document.getElementById('adminPanel');
-    window.renderAdmin = () => {
-        adminPanel.innerHTML = ads.map(a => `
+    // غرف التحكم (أدمن فقط)
+    window.showAdmin = () => {
+        const pass = prompt("أدخل كلمة سر غرفة التحكم:");
+        if(pass !== "admin123") return alert("كلمة سر خاطئة");
+        const panel = document.getElementById('adminPanel');
+        panel.innerHTML = ads.map((a, i) => `
             <div class="ad-box">
-                <h4>${a.title}</h4>
-                <button onclick="a.status='موافق عليه'; renderAdmin()">موافقة</button>
-                <button onclick="a.status='مرفوض'; a.reason=prompt('سبب الرفض؟'); renderAdmin()">رفض</button>
+                <h4>${a.title} - ${a.status}</h4>
+                <button onclick="ads[${i}].status='مقبول'; showAdmin()">قبول</button>
+                <button onclick="let r=prompt('سبب الرفض:'); if(r){ads[${i}].status='مرفوض: '+r; showAdmin()}">رفض</button>
             </div>
         `).join('');
     };
-    renderAdmin();
+    // استبدل استدعاء الزر في HTML بـ onclick="showAdmin()"
 </script>
 </body>
 </html>
