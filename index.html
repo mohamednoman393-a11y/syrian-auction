@@ -2,53 +2,73 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مزاد دمشق</title>
+    <title>مزاد دمشق - النسخة النهائية</title>
     <style>
         :root { --bg: #121212; --text: #fff; --accent: #bb86fc; }
         body.light { --bg: #f5f5f5; --text: #121212; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 80px; transition: 0.3s; }
         .page { display: none; padding: 15px; }
         .active { display: block; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .box { background: #1e1e1e; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid #333; }
-        .navbar { position: fixed; bottom: 0; width: 100%; background: #1e1e1e; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        .ad-item { background: #333; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; }
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #1e1e1e; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; z-index: 1000; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: none; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { cursor: pointer; padding: 12px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: bold; width: 100%; }
+        .btn-back { background: #444; margin-bottom: 10px; width: auto; padding: 8px 15px; }
     </style>
 </head>
 <body>
 
     <!-- 1. الرئيسية -->
     <div id="home" class="page active">
-        <h1>الرئيسية</h1>
+        <h1>مزاد دمشق</h1>
         <div id="cats-grid" class="grid"></div>
     </div>
     
     <!-- 2. الفروع -->
     <div id="subs" class="page">
+        <button class="btn-back" onclick="show('home')">⬅️ رجوع</button>
         <h2 id="subs-title"></h2>
         <div id="subs-grid" class="grid"></div>
     </div>
 
     <!-- 3. قائمة الإعلانات -->
     <div id="ads" class="page">
-        <h2 id="ads-title">الإعلانات</h2>
+        <button class="btn-back" onclick="show('subs')">⬅️ رجوع</button>
+        <h2 id="ads-title"></h2>
         <div id="ads-list"></div>
     </div>
 
-    <!-- 4. تفاصيل الإعلان -->
-    <div id="details" class="page">
-        <h2>تفاصيل الإعلان</h2>
-        <div class="box"><h3>إعلان تجريبي</h3><p>مواصفات السلعة...</p></div>
+    <!-- 4. إضافة إعلان -->
+    <div id="add-ad" class="page">
+        <h2>إضافة إعلان جديد</h2>
+        <input type="text" id="title" placeholder="اسم الإعلان (مثلاً: سيارة مرسيدس)" required>
+        <input type="text" id="phone" placeholder="رقم الهاتف" required>
+        <select id="city">
+            <option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>إدلب</option><option>دير الزور</option><option>الرقة</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option>
+        </select>
+        <input type="number" id="price" placeholder="السعر" required>
+        <select id="currency"><option>دولار</option><option>ليرة سورية</option></select>
+        <input type="file" multiple accept="image/*">
+        <textarea placeholder="وصف الإعلان" rows="4"></textarea>
+        <button onclick="submitAd()">نشر الإعلان</button>
     </div>
 
     <!-- 5. الإعدادات -->
     <div id="settings" class="page">
         <h2>الإعدادات</h2>
-        <button onclick="document.body.classList.toggle('light')">تبديل اللون (أسود/أبيض)</button>
-        <button onclick="alert('اللغة: العربية')">تغيير اللغة</button>
-        <div onclick="openAdmin()" style="color:var(--accent); cursor:pointer; margin-top:20px;">M - غرفة التحكم</div>
+        <button onclick="document.body.classList.toggle('light')">تبديل وضع الشاشة (أسود/أبيض)</button>
+        <button onclick="alert('اللغة الحالية: العربية')">تغيير اللغة (عربي/English)</button>
+        <div onclick="openAdmin()" style="margin-top:40px; color:var(--accent); cursor:pointer; font-weight:bold;">M - غرفة التحكم</div>
     </div>
 
+    <!-- 6. غرفة التحكم -->
+    <div id="admin-panel" class="page">
+        <h2>إعلانات قيد المراجعة</h2>
+        <div id="pending-list"></div>
+    </div>
+
+    <!-- الشريط السفلي -->
     <div class="navbar">
         <div onclick="show('home')">🏠 الرئيسية</div>
         <div onclick="show('add-ad')">➕ إضافة</div>
@@ -65,37 +85,41 @@
             "هواتف":"📱", "إلكترونيات":"💻", "أجهزة منزلية":"🏠", "حيوانات":"🐾"
         };
 
-        // 1. بناء الرئيسية
+        // بناء الصفحة
         const grid = document.getElementById('cats-grid');
         for(let name in cats) {
             grid.innerHTML += `<div class="box" onclick="openSubs('${name}')"><span>${cats[name]}</span><br>${name}</div>`;
         }
 
-        // 2. التنقل بين الصفحات
         function show(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // 3. فتح الفروع
         function openSubs(name) {
             document.getElementById('subs-title').innerText = name;
-            const subsGrid = document.getElementById('subs-grid');
-            subsGrid.innerHTML = `<div class="box" onclick="openAds('فرع 1')">فرع 1</div><div class="box" onclick="openAds('فرع 2')">فرع 2</div>`;
+            document.getElementById('subs-grid').innerHTML = `<div class="box" onclick="openAds('${name}')">عرض جميع الإعلانات</div>`;
             show('subs');
         }
 
-        // 4. عرض الإعلانات
-        function openAds(subName) {
-            document.getElementById('ads-title').innerText = subName;
-            const list = document.getElementById('ads-list');
-            list.innerHTML = `<div class="ad-item" onclick="show('details')">إعلان 1 - اضغط للمشاهدة</div>`;
+        function openAds(name) {
+            document.getElementById('ads-title').innerText = name;
+            document.getElementById('ads-list').innerHTML = `<div class="box">إعلان تجريبي رقم 1 - تفاصيل السلعة</div>`;
             show('ads');
         }
 
-        // 5. غرفة التحكم
+        function submitAd() {
+            const inputs = document.querySelectorAll('input, textarea');
+            for(let i=0; i<inputs.length; i++) { if(!inputs[i].value) { alert("يرجى تعبئة جميع الفراغات المطلوبة"); return; } }
+            alert("إعلانك قيد المراجعة!");
+            show('home');
+        }
+
         function openAdmin() {
-            if(prompt("كلمة السر:") === "2008n2008M") alert("تم الوصول لغرفة التحكم");
+            if(prompt("كلمة السر:") === "2008n2008M") {
+                document.getElementById('pending-list').innerHTML = '<div class="box">إعلان جديد بانتظار الموافقة <button style="background:green">قبول</button> <button style="background:red">رفض</button></div>';
+                show('admin-panel');
+            } else alert("كلمة سر خاطئة");
         }
     </script>
 </body>
