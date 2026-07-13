@@ -2,81 +2,118 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مزاد دمشق | غرفة التحكم</title>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-        const firebaseConfig = { apiKey: "AIzaSyAvdxlQipjpSDcwex5Ucc0KXSw07RO2mPE", authDomain: "gg55-9a884.firebaseapp.com", projectId: "gg55-9a884", storageBucket: "gg55-9a884.firebasestorage.app", messagingSenderId: "82936706158", appId: "1:82936706158:web:36e00ec48e134f5205227f" };
-        window.db = getFirestore(initializeApp(firebaseConfig));
-        window.colRef = collection(window.db, "ads");
-    </script>
+    <title>مزاد دمشق 🇸🇾</title>
     <style>
-        body { font-family: sans-serif; background: #0a0a0a; color: #fff; margin: 0; padding: 20px; }
+        body { font-family: sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
         .page { display: none; } .active { display: block; }
-        .nav { display: flex; justify-content: space-around; background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .card { background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333; margin: 5px; text-align: center; cursor: pointer; }
-        button { background: #27ae60; border: none; padding: 10px 20px; color: white; border-radius: 5px; cursor: pointer; }
-        .control-box { border: 2px solid #27ae60; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: center; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .ad-box { background: #1e1e1e; padding: 15px; margin-bottom: 15px; border-radius: 10px; border-right: 5px solid #27ae60; }
     </style>
 </head>
 <body>
 
-<!-- الصفحات الأربع المركزية -->
+<!-- الصفحات -->
 <div id="p1" class="page active">
     <h1>🇸🇾 مزاد دمشق</h1>
-    <div class="nav">
-        <button onclick="showPage('p1')">الرئيسية</button>
-        <button onclick="showPage('p2')">الأقسام</button>
-        <button onclick="showPage('p3')">إضافة</button>
-        <button onclick="showPage('p4')">غرفة التحكم</button>
-    </div>
-    <div id="mainGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+    <button onclick="showPage('pProfile')">👤 ملفي الشخصي</button>
+    <button onclick="showPage('pAdd')">+ نشر إعلان</button>
+    <button onclick="showPage('p4')" style="background:#e67e22">⚙️ غرفة التحكم (أدمن)</button>
+    <div class="grid" id="mainGrid"></div>
 </div>
 
 <div id="p2" class="page">
-    <h2>تصفح الأقسام</h2>
-    <div id="cats" class="grid"></div>
+    <button onclick="showPage('p1')">← رجوع</button>
+    <h2 id="catName"></h2>
+    <div class="grid" id="subGrid"></div>
 </div>
 
 <div id="p3" class="page">
-    <h2>إضافة إعلان جديد</h2>
-    <input type="text" id="iTitle" placeholder="اسم المنتج" style="width:100%; padding:10px;">
-    <button onclick="addAd()">نشر الإعلان</button>
+    <button onclick="showPage('p2')">← رجوع</button>
+    <h2 id="adTitle"></h2>
+    <div id="adDetailsContent"></div>
 </div>
 
 <div id="p4" class="page">
-    <h2>👤 غرفة التحكم الخاصة بك</h2>
-    <input type="text" id="myCode" placeholder="أدخل كودك الشخصي" onchange="loadMyAds()">
-    <div id="myAds" class="control-box"></div>
+    <h2>⚙️ غرفة التحكم</h2>
+    <div id="adminPanel"></div>
 </div>
 
-<script type="module">
-    const data = ["عقارات", "مركبات", "إلكترونيات", "أثاث", "حيوانات", "أغذية", "خدمات", "أزياء", "ترفيه", "صناعة"];
-    
+<div id="pAdd" class="page">
+    <button onclick="showPage('p1')">← إلغاء</button>
+    <h3>نشر إعلان</h3>
+    <input type="text" id="iName" placeholder="الاسم">
+    <input type="text" id="iCode" placeholder="كودك">
+    <select id="iCity"><option>اختر المحافظة</option><option>دمشق</option><option>حلب</option></select>
+    <select id="iCat" onchange="updateSubs()"><option>اختر الفئة</option><option value="عقارات">عقارات</option></select>
+    <select id="iSub"><option>اختر الفرع</option></select>
+    <button onclick="publish()">نشر</button>
+</div>
+
+<div id="pProfile" class="page">
+    <button onclick="showPage('p1')">← رجوع</button>
+    <input type="text" id="pName" placeholder="الاسم">
+    <input type="text" id="pCode" placeholder="الكود الشخصي">
+    <button onclick="saveProfile()">حفظ الملف</button>
+</div>
+
+<script>
+    const data = { "عقارات": ["شقق", "فلل"] };
+    let ads = []; // محاكاة لقاعدة البيانات
+
     window.showPage = (id) => { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
     };
 
-    // تعبئة الأقسام
-    const catsDiv = document.getElementById('cats');
-    data.forEach(c => catsDiv.innerHTML += `<div class="card" onclick="alert('جاري عرض: ${c}')">${c}</div>`);
+    // تعبئة الفئات
+    const mainGrid = document.getElementById('mainGrid');
+    for(let cat in data) { mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`; }
 
-    // وظيفة غرفة التحكم
-    window.loadMyAds = async () => {
-        const code = document.getElementById('myCode').value;
-        const list = document.getElementById('myAds');
-        list.innerHTML = "جاري التحميل...";
-        const snap = await getDocs(window.colRef);
-        list.innerHTML = "";
-        snap.forEach(d => {
-            if(d.data().creatorCode == code) {
-                list.innerHTML += `<div class="card">إعلانك: ${d.data().title} <button>تنشيط</button></div>`;
-            }
-        });
+    window.openSubs = (cat) => {
+        document.getElementById('catName').innerText = cat;
+        const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
+        data[cat].forEach(s => subGrid.innerHTML += `<div class="card" onclick="listAds('${s}')"><h4>${s}</h4></div>`);
+        showPage('p2');
     };
-    
-    window.addAd = () => { alert("تم إرسال طلب النشر للمراجعة!"); };
+
+    window.listAds = (sub) => {
+        const content = document.getElementById('adDetailsContent');
+        content.innerHTML = ads.filter(a => a.sub == sub && a.status == 'موافق عليه').map(a => `<div class="ad-box"><h4>${a.title}</h4><button onclick="viewAd('${a.id}')">عرض</button></div>`).join('');
+        showPage('p3');
+    };
+
+    window.publish = () => {
+        const name = document.getElementById('iName').value;
+        const code = document.getElementById('iCode').value;
+        if(!name || !code) return alert("يرجى ملء جميع الفراغات!");
+        ads.push({id: Date.now(), title: document.getElementById('iSub').value, sub: document.getElementById('iSub').value, status: 'انتظار'});
+        alert("تم إرسال إعلانك للمراجعة!");
+        showPage('p1');
+    };
+
+    window.saveProfile = () => {
+        const code = document.getElementById('pCode').value;
+        if(!code) return alert("يرجى تعبئة جميع الفراغات!");
+        // محاكاة التحقق من الكود
+        if(code == "123") return alert("هذا الكود متوفر، يرجى اختيار كود آخر!");
+        alert("تم حفظ الملف!");
+    };
+
+    // غرفة التحكم
+    const adminPanel = document.getElementById('adminPanel');
+    window.renderAdmin = () => {
+        adminPanel.innerHTML = ads.map(a => `
+            <div class="ad-box">
+                <h4>${a.title}</h4>
+                <button onclick="a.status='موافق عليه'; renderAdmin()">موافقة</button>
+                <button onclick="a.status='مرفوض'; a.reason=prompt('سبب الرفض؟'); renderAdmin()">رفض</button>
+            </div>
+        `).join('');
+    };
+    renderAdmin();
 </script>
 </body>
 </html>
