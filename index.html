@@ -2,77 +2,73 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مزاد دمشق - الصفحة الرئيسية</title>
+    <title>مزاد دمشق</title>
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        header { text-align: center; padding: 20px; border-bottom: 2px solid #333; margin-bottom: 20px; }
-        h3 { color: #bb86fc; border-right: 4px solid #bb86fc; padding-right: 10px; margin-top: 30px; }
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .box { 
-            background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; 
-            text-align: center; cursor: pointer; transition: 0.3s; 
-        }
+        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
+        .page { display: none; }
+        .active { display: block; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .box { background: #1e1e1e; padding: 15px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; }
         .box:hover { background: #333; border-color: #bb86fc; }
-        .icon { display: block; font-size: 28px; margin-bottom: 8px; }
+        .icon { display: block; font-size: 24px; margin-bottom: 5px; }
+        h3 { color: #bb86fc; margin-top: 25px; border-right: 4px solid #bb86fc; padding-right: 10px; }
     </style>
 </head>
 <body>
 
-    <header><h1>مزاد دمشق</h1></header>
-
-    <h3>عقارات</h3>
-    <div class="grid-container">
-        <div class="box"><span class="icon">🏠</span>سكني للبيع</div>
-        <div class="box"><span class="icon">🏗️</span>أراضي</div>
-        <div class="box"><span class="icon">🛋️</span>أثاث</div>
-        <div class="box"><span class="icon">🔑</span>سكني للإيجار</div>
-        <div class="box"><span class="icon">🏠</span>سكني للبيع</div>
-        <div class="box"><span class="icon">🏢</span>تجاري للبيع</div>
+    <!-- الصفحة الرئيسية -->
+    <div id="main-page" class="page active">
+        <header style="text-align: center;"><h1>مزاد دمشق</h1></header>
+        <div id="categories-container"></div>
     </div>
 
-    <h3>المركبات</h3>
-    <div class="grid-container">
-        <div class="box"><span class="icon">🚗</span>سيارات</div>
-        <div class="box"><span class="icon">🏪</span>معارض سيارات</div>
-        <div class="box"><span class="icon">📅</span>إيجار سيارات</div>
-        <div class="box"><span class="icon">🏍️</span>دراجات</div>
-        <div class="box"><span class="icon">⚙️</span>قطع غيار</div>
-        <div class="box"><span class="icon">🛠️</span>خدمات سيارات</div>
-        <div class="box"><span class="icon">🚤</span>أدوات بحرية</div>
-        <div class="box"><span class="icon">🚜</span>معدات ثقيلة</div>
+    <!-- صفحة التفاصيل -->
+    <div id="details-page" class="page">
+        <button onclick="showMain()" style="padding:10px; border-radius:8px; border:none; cursor:pointer;">⬅️ رجوع</button>
+        <h2 id="cat-title"></h2>
+        <div id="sub-categories" class="grid"></div>
     </div>
 
-    <h3>خدمات</h3>
-    <div class="grid-container">
-        <div class="box"><span class="icon">🐜</span>مبيدات ومكافحة</div>
-        <div class="box"><span class="icon">❄️</span>تكييف</div>
-        <div class="box"><span class="icon">🧹</span>خدمات تنظيف</div>
-        <div class="box"><span class="icon">🎉</span>مناسبات</div>
-        <div class="box"><span class="icon">🏗️</span>مقاولات</div>
-        <div class="box"><span class="icon">🚚</span>نقل أثاث</div>
-        <div class="box"><span class="icon">📦</span>توصيل</div>
-        <div class="box"><span class="icon">🎨</span>ديكور وتصميم</div>
-        <div class="box"><span class="icon">🌳</span>حدائق وزراعة</div>
-        <div class="box"><span class="icon">🎓</span>تعليم</div>
-        <div class="box"><span class="icon">📈</span>بيع مشاريع</div>
-        <div class="box"><span class="icon">🔧</span>خدمات صيانة</div>
-        <div class="box"><span class="icon">💼</span>خدمات تجارية</div>
-    </div>
+    <script>
+        const categories = {
+            "عقارات": {
+                "سكني للبيع": "🏠", "أراضي": "🏗️", "أثاث": "🛋️", "سكني للإيجار": "🔑", "تجاري للبيع": "🏢", "تجاري للإيجار": "🏬"
+            },
+            "مركبات": {
+                "سيارات": "🚗", "معارض": "🏪", "إيجار": "📅", "دراجات": "🏍️", "قطع غيار": "⚙️", "خدمات سيارات": "🛠️", "أدوات بحرية": "🚤", "معدات ثقيلة": "🚜"
+            },
+            "خدمات": {
+                "مكافحة حشرات": "🐜", "تكييف": "❄️", "تنظيف": "🧹", "مناسبات": "🎉", "مقاولات": "🏗️", "نقل أثاث": "🚚", "توصيل": "📦", "ديكور": "🎨", "حدائق": "🌳", "تعليم": "🎓", "بيع مشاريع": "📈", "صيانة": "🔧", "خدمات تجارية": "💼"
+            },
+            "إلكترونيات": {
+                "هواتف": "📱", "إلكترونيات": "💻", "أجهزة منزلية": "🏠", "كاميرات": "📷", "ألعاب": "🎮"
+            },
+            "الحيوانات": { "حيوانات وطيور": "🐾" }
+        };
 
-    <h3>إلكترونيات</h3>
-    <div class="grid-container">
-        <!-- ربط زر الهواتف بصفحة جديدة -->
-        <div class="box" onclick="window.location.href='phones.html'"><span class="icon">📱</span>هواتف</div>
-        <div class="box"><span class="icon">💻</span>إلكترونيات</div>
-        <div class="box"><span class="icon">🏠</span>أجهزة منزلية</div>
-        <div class="box"><span class="icon">📷</span>كاميرات</div>
-        <div class="box"><span class="icon">🎮</span>ألعاب إلكترونية</div>
-    </div>
+        const container = document.getElementById('categories-container');
+        
+        // بناء الصفحة الرئيسية تلقائياً
+        for (let group in categories) {
+            container.innerHTML += `<h3>${group}</h3><div class="grid" id="group-${group}"></div>`;
+            for (let name in categories[group]) {
+                document.getElementById(`group-${group}`).innerHTML += `
+                    <div class="box" onclick="loadDetails('${name}')">
+                        <span class="icon">${categories[group][name]}</span>${name}
+                    </div>`;
+            }
+        }
 
-    <h3>حيوانات</h3>
-    <div class="grid-container">
-        <div class="box"><span class="icon">🐾</span>حيوانات وطيور</div>
-    </div>
+        function loadDetails(name) {
+            document.getElementById('cat-title').innerText = name;
+            document.getElementById('main-page').className = 'page';
+            document.getElementById('details-page').className = 'page active';
+        }
 
+        function showMain() {
+            document.getElementById('details-page').className = 'page';
+            document.getElementById('main-page').className = 'page active';
+        }
+    </script>
 </body>
 </html>
