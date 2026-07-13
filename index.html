@@ -4,116 +4,85 @@
     <meta charset="UTF-8">
     <title>مزاد دمشق</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
-        .page { display: none; }
+        :root { --bg: #121212; --text: #fff; --accent: #bb86fc; }
+        body.light { --bg: #f5f5f5; --text: #121212; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 80px; transition: 0.3s; }
+        .page { display: none; padding: 15px; }
         .active { display: block; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .box { background: #1e1e1e; padding: 15px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; }
-        .box:hover { background: #333; border-color: #bb86fc; }
-        .filter-btn { background: #333; padding: 8px 12px; border-radius: 20px; margin: 5px; display: inline-block; border: 1px solid #555; }
-        .ad-item { background: #1e1e1e; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; }
-        h3 { color: #bb86fc; border-right: 4px solid #bb86fc; padding-right: 10px; margin-top: 25px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .box { background: #1e1e1e; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid #333; }
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #1e1e1e; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; background: #333; border: none; color: white; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <!-- 1. الرئيسية -->
-    <div id="p1" class="page active">
-        <header style="text-align: center;"><h1>مزاد دمشق</h1></header>
-        <div id="main-grid"></div>
+    <div id="home" class="page active">
+        <h1>مزاد دمشق</h1>
+        <div id="categories-container" class="grid"></div>
+    </div>
+    
+    <div id="add-ad" class="page">
+        <h2>إضافة إعلان</h2>
+        <form id="adForm" onsubmit="return false">
+            <input type="text" id="adName" placeholder="اسم الإعلان" required>
+            <input type="text" id="phone" placeholder="رقم الهاتف" required>
+            <select id="city" required>
+                <option value="">اختر المحافظة</option>
+                <option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>إدلب</option><option>دير الزور</option><option>الرقة</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option>
+            </select>
+            <input type="number" id="price" placeholder="السعر" required>
+            <select id="currency"><option>دولار</option><option>ليرة سورية</option></select>
+            <input type="file" id="images" multiple accept="image/*" required>
+            <button onclick="submitAd()" style="background:var(--accent); width:100%; padding:15px; border:none; border-radius:5px; cursor:pointer;">نشر الإعلان</button>
+        </form>
     </div>
 
-    <!-- 2. الأقسام الفرعية -->
-    <div id="p2" class="page">
-        <button onclick="showPage('p1')">⬅️ رجوع</button>
-        <h2 id="cat-title"></h2>
-        <div id="filters-container"></div>
-        <h3>الأقسام الفرعية</h3>
-        <div class="grid" id="subs-grid"></div>
+    <div id="settings" class="page">
+        <h2>الإعدادات</h2>
+        <button onclick="document.body.classList.toggle('light')">تبديل وضع الشاشة (أسود/أبيض)</button>
+        <button onclick="alert('اللغة الحالية: العربية')">تغيير اللغة (عربي/English)</button>
+        <div onclick="openAdmin()" style="margin-top:50px; font-weight:bold; cursor:pointer; color:var(--accent);">M - غرفة التحكم</div>
     </div>
 
-    <!-- 3. قائمة الإعلانات -->
-    <div id="p3" class="page">
-        <button onclick="showPage('p2')">⬅️ رجوع</button>
-        <h2>الإعلانات</h2>
-        <div id="ads-list"></div>
-    </div>
-
-    <!-- 4. تفاصيل الإعلان -->
-    <div id="p4" class="page">
-        <button onclick="showPage('p3')">⬅️ رجوع</button>
-        <h2>تفاصيل الإعلان</h2>
-        <div class="box"><h3>العنصر المختار</h3><p>تفاصيل وصور الإعلان...</p><button style="background:#bb86fc; border:none; padding:10px; border-radius:5px;">اتصل بالمعلن</button></div>
+    <div class="navbar">
+        <div onclick="show('home')" style="cursor:pointer;">🏠 الرئيسية</div>
+        <div onclick="show('add-ad')" style="cursor:pointer;">➕ إضافة</div>
+        <div onclick="show('settings')" style="cursor:pointer;">⚙️ الإعدادات</div>
     </div>
 
     <script>
-        const appData = {
-            "عقارات": {
-                "سكني للبيع": {icon:"🏠", filters:["للبيع","مطلوب"], subs:["فلل","شقق","أبراج","بيوت شعبية"]},
-                "أراضي": {icon:"🏗️", filters:["زراعي","تجاري"], subs:["أراضي سكنية","صناعية","أراضي أخرى"]},
-                "أثاث": {icon:"🛋️", filters:["جديد","مستعمل"], subs:["طاولات","غرف نوم","إضاءة","سجاد"]},
-                "سكني للإيجار": {icon:"🔑", filters:["يومي","شهري"], subs:["شقق","فلل"]},
-                "تجاري للبيع": {icon:"🏢", filters:["مكتب","محل"], subs:["مكاتب","محلات","مستودعات"]},
-                "تجاري للإيجار": {icon:"🏬", filters:["مكتب","محل"], subs:["مكاتب","محلات"]}
-            },
-            "مركبات": {
-                "سيارات": {icon:"🚗", filters:["سيدان","دفع رباعي"], subs:["جديد","مستعمل"]},
-                "معارض سيارات": {icon:"🏪", filters:["بيع","استبدال"], subs:["وكالات","معارض"]},
-                "إيجار سيارات": {icon:"📅", filters:["اقتصادي","فاخر"], subs:["يومي","شهري"]},
-                "دراجات": {icon:"🏍️", filters:["نارية","هوائية"], subs:["بيع","صيانة"]},
-                "قطع غيار": {icon:"⚙️", filters:["ميكانيك","كهرباء"], subs:["جديد","مستعمل"]},
-                "خدمات سيارات": {icon:"🛠️", filters:["غسيل","تصليح"], subs:["زيوت","إطارات"]},
-                "أدوات بحرية": {icon:"🚤", filters:["بيع","إيجار"], subs:["قوارب","معدات"]},
-                "معدات ثقيلة": {icon:"🚜", filters:["بيع","إيجار"], subs:["رافعات","جرافات"]}
-            },
-            "خدمات": {
-                "مبيدات وحشرات": {icon:"🐜", filters:["منزلي","تجاري"], subs:["رش","تعقيم"]},
-                "تكييف": {icon:"❄️", filters:["سبليت","مركزي"], subs:["تركيب","صيانة"]},
-                "خدمات تنظيف": {icon:"🧹", filters:["منازل","مكاتب"], subs:["تنظيف عميق","غسيل"]},
-                "مناسبات": {icon:"🎉", filters:["قاعات","تجهيز"], subs:["تصوير","تنسيق"]},
-                "مقاولات": {icon:"🏗️", filters:["بناء","ترميم"], subs:["هيكل","ديكور"]},
-                "نقل أثاث": {icon:"🚚", filters:["داخلي","خارجي"], subs:["فك","تركيب"]},
-                "التوصيل": {icon:"📦", filters:["سريع","عادي"], subs:["طرود","طلبات"]},
-                "الديكور والتصميم": {icon:"🎨", filters:["داخلي","خارجي"], subs:["تصميم","تنفيذ"]},
-                "الحدائق والزراعة": {icon:"🌳", filters:["تنسيق","صيانة"], subs:["أشجار","عشب"]},
-                "تعليم": {icon:"🎓", filters:["دروس","معاهد"], subs:["لغات","تقوية"]},
-                "بيع مشاريع": {icon:"📈", filters:["استثمار","تجارة"], subs:["مشاريع قائمة","ناشئة"]},
-                "خدمات صيانة": {icon:"🔧", filters:["كهرباء","سباكة"], subs:["أعطال","تركيبات"]},
-                "خدمات تجارية": {icon:"💼", filters:["تأسيس","استشارات"], subs:["تراخيص","تسويق"]}
-            },
-            "إلكترونيات": {
-                "هواتف": {icon:"📱", filters:["أيفون","سامسونج"], subs:["جديد","مستعمل"]},
-                "إلكترونيات": {icon:"💻", filters:["لابتوب","اكسسوارات"], subs:["جديد","مستعمل"]},
-                "أجهزة منزلية": {icon:"🏠", filters:["برادات","غسالات"], subs:["بيع","صيانة"]},
-                "كاميرات وهواتف": {icon:"📷", filters:["تصوير","عدسات"], subs:["احترافي","عادي"]},
-                "ألعاب إلكترونية": {icon:"🎮", filters:["بلايستيشن","إكس بوكس"], subs:["جديد","مستعمل"]}
-            },
-            "حيوانات": {
-                "حيوانات": {icon:"🐾", filters:["بيع","تبني"], subs:["طيور","قطط","كلاب"]}
-            }
+        const cats = {
+            "سكني للبيع": "🏠", "أراضي": "🏗️", "أثاث": "🛋️", "سكني للإيجار": "🔑", "تجاري للبيع": "🏢", 
+            "تجاري للإيجار": "🏬", "سيارات": "🚗", "معارض سيارات": "🏪", "إيجار سيارات": "📅", "دراجات": "🏍️", 
+            "قطع غيار": "⚙️", "خدمات سيارات": "🛠️", "أدوات بحرية": "🚤", "معدات ثقيلة": "🚜", "مبيدات حشرات": "🐜", 
+            "تكييف": "❄️", "تنظيف": "🧹", "مناسبات": "🎉", "مقاولات": "🏗️", "نقل أثاث": "🚚", "توصيل": "📦", 
+            "ديكور": "🎨", "حدائق": "🌳", "تعليم": "🎓", "بيع مشاريع": "📈", "صيانة": "🔧", "خدمات تجارية": "💼", 
+            "هواتف": "📱", "إلكترونيات": "💻", "أجهزة منزلية": "🏠", "حيوانات": "🐾"
         };
-
-        function showPage(id) { document.querySelectorAll('.page').forEach(p => p.className = 'page'); document.getElementById(id).className = 'page active'; }
-
-        const mainGrid = document.getElementById('main-grid');
-        for (let group in appData) {
-            mainGrid.innerHTML += `<h3>${group}</h3>`;
-            for (let name in appData[group]) {
-                mainGrid.innerHTML += `<div class="box" onclick="loadSubs('${name}')"><span class="icon">${appData[group][name].icon}</span>${name}</div>`;
-            }
+        
+        const container = document.getElementById('categories-container');
+        for (let name in cats) {
+            container.innerHTML += `<div class="box"><span>${cats[name]}</span><br>${name}</div>`;
         }
 
-        function loadSubs(name) {
-            document.getElementById('cat-title').innerText = name;
-            let data = null;
-            for(let g in appData) { if(appData[g][name]) data = appData[g][name]; }
-            document.getElementById('filters-container').innerHTML = data.filters.map(f => `<span class="filter-btn">${f}</span>`).join('');
-            document.getElementById('subs-grid').innerHTML = data.subs.map(s => `<div class="box" onclick="showPage('p3')">${s}</div>`).join('');
-            showPage('p2');
+        function show(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
 
-        const adsList = document.getElementById('ads-list');
-        for(let i=1; i<=3; i++) { adsList.innerHTML += `<div class="ad-item" onclick="showPage('p4')">إعلان رقم ${i} - اضغط للمشاهدة</div>`; }
+        function submitAd() {
+            const inputs = document.querySelectorAll('input, select');
+            for(let i=0; i<inputs.length; i++) { if(!inputs[i].value) { alert("يرجى تعبئة جميع الفراغات المطلوبة"); return; } }
+            alert("إعلانك قيد المراجعة!");
+            show('home');
+        }
+
+        function openAdmin() {
+            const pass = prompt("أدخل كلمة السر:");
+            if(pass === "2008n2008M") alert("تم الدخول لغرفة التحكم");
+            else alert("كلمة سر خاطئة");
+        }
     </script>
 </body>
 </html>
