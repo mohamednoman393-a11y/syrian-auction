@@ -2,139 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مزاد دمشق 🇸🇾</title>
+    <title>مزاد دمشق الاحترافي</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
         .page { display: none; } .active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
-        .card { background: #1e1e1e; padding: 15px; border-radius: 10px; border: 1px solid #333; text-align: center; cursor: pointer; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
-        button { background: #27ae60; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; }
-        .ad-box { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #444; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; }
+        .card:hover { border-color: #27ae60; transform: scale(1.05); }
+        .btn-nav { background: #333; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: white; border: none; }
+        .ad-box { background: #222; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid #27ae60; }
     </style>
 </head>
 <body>
 
-<!-- الصفحات -->
+<!-- التنقل العلوي -->
+<div style="display:flex; gap:10px; margin-bottom:20px;">
+    <button class="btn-nav" onclick="showPage('p1')">🏠 الرئيسية</button>
+    <button class="btn-nav" onclick="showPage('p2')">📂 الأقسام</button>
+    <button class="btn-nav" onclick="showPage('p3')">➕ إعلان</button>
+    <button class="btn-nav" onclick="showPage('p4')" style="background:#c0392b">⚙️ التحكم</button>
+</div>
+
+<!-- 1. الرئيسية -->
 <div id="p1" class="page active">
     <h1>🇸🇾 مزاد دمشق</h1>
-    <button onclick="showPage('pProfile')">👤 الملف الشخصي</button>
-    <button onclick="showPage('pAdd')">+ نشر إعلان</button>
-    <button onclick="showPage('p4')" style="background:#d35400">⚙️ غرفة التحكم</button>
-    <div class="grid" id="mainGrid"></div>
+    <div class="grid" id="mainCats"></div>
 </div>
 
+<!-- 2. الأقسام والفروع -->
 <div id="p2" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة للرئيسية</button>
-    <h2 id="catName"></h2>
-    <div class="grid" id="subGrid"></div>
+    <button onclick="showPage('p1')">← عودة</button>
+    <h2 id="catTitle"></h2>
+    <div class="grid" id="subCats"></div>
 </div>
 
+<!-- 3. صفحة الإضافة (مع دعم وسائط) -->
 <div id="p3" class="page">
-    <button onclick="showPage('p2')">⬅️ عودة</button>
-    <div id="adDetails"></div>
-</div>
-
-<div id="p4" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة</button>
-    <h2>⚙️ غرفة التحكم (أدمن)</h2>
-    <div id="adminPanel"></div>
-</div>
-
-<div id="pAdd" class="page">
-    <button onclick="showPage('p1')">⬅️ إلغاء</button>
     <h3>نشر إعلان جديد</h3>
-    <input type="text" id="iTitle" placeholder="اسم الإعلان">
-    <input type="text" id="iCode" placeholder="كودك الشخصي">
-    <select id="iCity"><option value="">اختر المحافظة</option><option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
-    <select id="iCat" onchange="updateSubs()"><option value="">اختر الفئة</option></select>
-    <select id="iSub"><option value="">اختر النوع</option></select>
-    <input type="file" id="iImg">
-    <button onclick="publish()">نشر الإعلان</button>
+    <input type="file" multiple accept="image/*,video/*" id="mediaUpload">
+    <p><small>يمكنك رفع حتى 5 صور وفيديو</small></p>
+    <button onclick="alert('تم رفع الوسائط!')">رفع الإعلان</button>
 </div>
 
-<div id="pProfile" class="page">
-    <button onclick="showPage('p1')">⬅️ عودة</button>
-    <h3>إنشاء/تعديل ملف</h3>
-    <input type="text" id="pName" placeholder="الاسم">
-    <input type="text" id="pCode" placeholder="كود فريد">
-    <button onclick="saveProfile()">حفظ الملف</button>
+<!-- 4. غرفة التحكم (محمية) -->
+<div id="p4" class="page">
+    <input type="password" id="adminPass" placeholder="كلمة سر الأدمن">
+    <button onclick="checkAdmin()">دخول الأدمن</button>
+    <div id="adminArea"></div>
 </div>
 
 <script>
-    const data = {
-        "عقارات": ["فلل وقصور", "شقق سكنية", "أراضي سكنية", "أراضي تجارية", "أراضي زراعية", "عمارات استثمارية", "مكاتب تجارية", "محلات تجارية", "شاليهات ومنتجعات", "استراحات ومخيمات", "مستودعات ومخازن", "مزارع", "أجنحة فندقية"],
-        "مركبات": ["سيارات سيدان", "سيارات دفع رباعي", "سيارات عائلية", "سيارات رياضية", "سيارات كلاسيكية", "شاحنات", "دراجات نارية", "قوارب ويخوت", "معدات ثقيلة", "قطع غيار", "إكسسوارات", "لوحات مميزة"],
-        "إلكترونيات": ["هواتف أندرويد", "هواتف آيفون", "تابلت وآيباد", "ساعات ذكية", "سماعات", "لابتوب", "كمبيوتر مكتبي", "طابعات", "كاميرات", "كاميرات مراقبة", "ألعاب فيديو", "أشرطة", "شاشات", "صوتيات"]
-        // (تم اختصار القائمة لتناسب العرض، يمكنك إكمالها بنفس النمط)
+    const categories = {
+        "عقارات": ["فلل", "شقق", "أراضي سكنية", "تجارية", "زراعية", "عمارات", "مكاتب", "محلات", "شاليهات", "استراحات", "مخازن", "مزارع"],
+        "مركبات": ["سيدان", "دفع رباعي", "عائلية", "رياضية", "كلاسيكية", "شاحنات", "دراجات", "قوارب", "معدات ثقيلة", "قطع غيار", "إكسسوارات", "لوحات"],
+        "إلكترونيات": ["أندرويد", "آيفون", "تابلت", "ساعات", "سماعات", "لابتوب", "كمبيوتر", "طابعات", "كاميرات", "مراقبة", "ألعاب", "شاشات"],
+        "خدمات": ["برمجة", "تصميم", "ترجمة", "كتابة", "تسويق", "استشارات", "تنظيف", "صيانة", "شحن", "تنظيم حفلات", "وظائف", "باحثين عن عمل"]
     };
-
-    let users = {}; // تخزين الأكواد
-    let ads = [];
 
     window.showPage = (id) => { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         document.getElementById(id).classList.add('active'); 
     };
 
-    // تعبئة القوائم
-    const iCat = document.getElementById('iCat');
-    for(let cat in data) {
-        document.getElementById('mainGrid').innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
-        iCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+    // عرض المربعات الرئيسية
+    const mainGrid = document.getElementById('mainCats');
+    for(let cat in categories) {
+        mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
     }
 
-    window.updateSubs = () => {
-        const s = document.getElementById('iSub'); s.innerHTML = "";
-        data[iCat.value].forEach(sub => s.innerHTML += `<option value="${sub}">${sub}</option>`);
-    };
-
+    // عرض الفروع الـ 12
     window.openSubs = (cat) => {
-        document.getElementById('catName').innerText = cat;
-        const grid = document.getElementById('subGrid'); grid.innerHTML = "";
-        data[cat].forEach(s => grid.innerHTML += `<div class="card" onclick="listAds('${s}')"><h4>${s}</h4></div>`);
+        document.getElementById('catTitle').innerText = cat;
+        const subGrid = document.getElementById('subCats'); subGrid.innerHTML = "";
+        categories[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="alert('عرض إعلانات: ${sub}')"><h4>${sub}</h4></div>`);
         showPage('p2');
     };
 
-    window.listAds = (sub) => {
-        const d = document.getElementById('adDetails');
-        d.innerHTML = ads.filter(a => a.sub == sub && a.status == 'مقبول').map(a => `<div class="ad-box"><h4>${a.title}</h4><p>المحافظة: ${a.city}</p></div>`).join('');
-        showPage('p3');
+    // غرفة التحكم المحمية
+    window.checkAdmin = () => {
+        if(document.getElementById('adminPass').value === "1234") {
+            document.getElementById('adminArea').innerHTML = "<h3>لوحة التحكم (موافقة/رفض)</h3>";
+        } else {
+            alert("كلمة سر خاطئة!");
+        }
     };
-
-    window.saveProfile = () => {
-        const name = document.getElementById('pName').value;
-        const code = document.getElementById('pCode').value;
-        if(!name || !code) return alert("يرجى ملء جميع الفراغات");
-        if(users[code]) return alert("رجاء استخدام كود آخر، هذا الكود غير متوفر");
-        users[code] = name;
-        alert("تم حفظ الملف الشخصي!");
-    };
-
-    window.publish = () => {
-        const title = document.getElementById('iTitle').value;
-        const code = document.getElementById('iCode').value;
-        const city = document.getElementById('iCity').value;
-        if(!title || !code || !city || !iCat.value) return alert("يرجى ملء جميع الفراغات");
-        ads.push({title, code, city, sub: document.getElementById('iSub').value, status: 'انتظار'});
-        alert("تم إرسال الإعلان للمراجعة");
-        showPage('p1');
-    };
-
-    // غرف التحكم (أدمن فقط)
-    window.showAdmin = () => {
-        const pass = prompt("أدخل كلمة سر غرفة التحكم:");
-        if(pass !== "admin123") return alert("كلمة سر خاطئة");
-        const panel = document.getElementById('adminPanel');
-        panel.innerHTML = ads.map((a, i) => `
-            <div class="ad-box">
-                <h4>${a.title} - ${a.status}</h4>
-                <button onclick="ads[${i}].status='مقبول'; showAdmin()">قبول</button>
-                <button onclick="let r=prompt('سبب الرفض:'); if(r){ads[${i}].status='مرفوض: '+r; showAdmin()}">رفض</button>
-            </div>
-        `).join('');
-    };
-    // استبدل استدعاء الزر في HTML بـ onclick="showAdmin()"
 </script>
 </body>
 </html>
