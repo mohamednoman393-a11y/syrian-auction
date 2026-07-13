@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مزاد دمشق | المنصة الشاملة</title>
+    <title>مزاد دمشق | النظام المتكامل</title>
     <style>
         :root { --primary: #c2185b; --bg: #121212; --card: #1e1e1e; --text: #fff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
@@ -20,40 +20,36 @@
 </head>
 <body>
 
-<!-- 1. الرئيسية -->
 <div id="p1" class="page active">
     <h1>مزاد دمشق 🇸🇾</h1>
     <div class="grid" id="mainGrid"></div>
 </div>
 
-<!-- 2. الأقسام الفرعية -->
 <div id="p2" class="page">
     <button onclick="showPage('p1')">⬅️ عودة</button>
     <h2 id="catName"></h2>
     <div class="grid" id="subGrid"></div>
 </div>
 
-<!-- 3. الإضافة (إلزامية البيانات) -->
 <div id="p3" class="page">
     <button onclick="showPage('p1')">⬅️ إلغاء</button>
     <h2>➕ نشر إعلان جديد 📢</h2>
-    <input type="text" id="iTitle" placeholder="عنوان الإعلان">
-    <textarea id="iDesc" placeholder="وصف المنتج بالتفصيل"></textarea>
+    <input type="text" id="iTitle" placeholder="اسم الإعلان">
+    <input type="text" id="iCode" placeholder="الكود الشخصي (للملف)">
+    <textarea id="iDesc" placeholder="وصف المنتج"></textarea>
     <input type="number" id="iPrice" placeholder="السعر">
     <select id="iCurr"><option>دولار ($)</option><option>ليرة سورية (SYP)</option></select>
-    <select id="iCity"><option>اختر المحافظة 📍</option><option>دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
+    <select id="iCity"><option>اختر المحافظة 📍</option><option>دمشق</option><option>ريف دمشق</option><option>حلب</option><option>حمص</option><option>حماة</option><option>اللاذقية</option><option>طرطوس</option><option>دير الزور</option><option>الرقة</option><option>إدلب</option><option>الحسكة</option><option>درعا</option><option>السويداء</option><option>القنيطرة</option></select>
     <input type="file" multiple accept="image/*,video/*">
     <button class="btn-full" onclick="submitAd()">نشر الإعلان 🚀</button>
 </div>
 
-<!-- 4. غرفة التحكم (للإدارة فقط) -->
 <div id="p4" class="page">
     <button onclick="showPage('p1')">⬅️ عودة</button>
     <h2>⚙️ غرفة التحكم (أدمن) 🛡️</h2>
     <div id="adminPanel"></div>
 </div>
 
-<!-- التنقل السفلي -->
 <div class="nav-bar">
     <div class="nav-item" onclick="showPage('p1')">🏠<br>الرئيسية</div>
     <div class="nav-item add-btn" onclick="showPage('p3')">+</div>
@@ -74,26 +70,24 @@
     }
 
     function submitAd() {
-        if(!document.getElementById('iTitle').value || !document.getElementById('iPrice').value || document.getElementById('iCity').value === "اختر المحافظة 📍") {
-            alert("⚠️ الرجاء تعبئة جميع الخانات المطلوبة!");
+        if(!document.getElementById('iTitle').value || !document.getElementById('iCode').value || !document.getElementById('iPrice').value || document.getElementById('iCity').value === "اختر المحافظة 📍") {
+            alert("⚠️ عذراً! الرجاء تعبئة جميع الخانات المطلوبة، بما فيها كود الملف الشخصي.");
             return;
         }
-        alert("✅ تم إرسال إعلانك! إعلانك الآن قيد المراجعة.");
-        const panel = document.getElementById('adminPanel');
-        panel.innerHTML += `<div class="card">طلب جديد: ${document.getElementById('iTitle').value}<br><button onclick="this.parentElement.remove(); alert('تم النشر! 🎉')">موافقة</button></div>`;
+        alert("✅ تم إرسال إعلانك! سيتم مراجعته من قبل الإدارة.");
+        document.getElementById('adminPanel').innerHTML += `<div class="card">طلب: ${document.getElementById('iTitle').value}<br><button onclick="this.parentElement.remove()">موافقة ✅</button></div>`;
         showPage('p1');
     }
 
-    // بناء الواجهة
     const mainGrid = document.getElementById('mainGrid');
     for(let cat in data) {
         mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
     }
 
     function openSubs(cat) {
-        document.getElementById('catTitle').innerText = cat;
+        document.getElementById('catName').innerText = cat;
         const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
-        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="alert('فتح إعلانات: ${sub}')"><h4>${sub}</h4></div>`);
+        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="showPage('p1')"><h4>${sub}</h4></div>`);
         showPage('p2');
     }
 </script>
