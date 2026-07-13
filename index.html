@@ -2,81 +2,23 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تطبيق مزاد قطر المتكامل</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مزاد دمشق</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
-        .page { display: none; }
-        .active { display: block; }
-        /* تصميم الهيدر والبحث */
-        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #333; }
-        /* شبكة الأقسام */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .card { background: #1e1e1e; border: 1px solid #333; padding: 20px; text-align: center; border-radius: 12px; }
-        /* صفحة المنتج وتفاصيله */
-        .product-card { background: #1e1e1e; padding: 15px; border-radius: 12px; margin: 10px; }
-        .action-bar { position: fixed; bottom: 0; width: 100%; display: flex; gap: 5px; background: #1a1a1a; padding: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; color: white; cursor: pointer; }
-        /* ناف بار سفلي */
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        /* هنا سنضع كل التصاميم لاحقاً */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. الشاشة الرئيسية -->
-    <div id="home" class="page active">
-        <div class="header"><span>☰</span> <h2>مزاد قطر</h2> <span>🔔 99+</span></div>
-        <div class="grid">
-            <div class="card" onclick="show('listing')">🚗 سيارات</div>
-            <div class="card" onclick="show('listing')">🏠 عقارات</div>
-            <div class="card" onclick="show('listing')">🐦 طيور</div>
-            <div class="card" onclick="show('listing')">🛠️ خدمات</div>
-        </div>
-    </div>
+    <h1>مزاد دمشق</h1>
+    <p>هنا ستبدأ ببناء أقسام موقعك قطعة قطعة.</p>
 
-    <!-- 2. صفحة عرض القائمة (الفلاتر) -->
-    <div id="listing" class="page">
-        <div class="header"><span onclick="show('home')">⬅️ رجوع</span> <h2>الطيور</h2></div>
-        <div style="padding:10px;">
-            <input type="text" placeholder="بحث..." style="width:100%; padding:10px; border-radius:5px;">
-            <div class="grid" style="margin-top:10px;">
-                <div class="card" onclick="show('details')">🦜 كنيور</div>
-                <div class="card" onclick="show('details')">🐤 بادجي</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. صفحة تفاصيل الإعلان (مع كل البيانات) -->
-    <div id="details" class="page">
-        <div class="header"><span onclick="show('listing')">⬅️ رجوع</span> <span>⭐</span></div>
-        <div style="height:250px; background:#333; margin:10px; border-radius:10px;">[معرض الصور]</div>
-        <div class="product-card">
-            <h2>الكنيور</h2>
-            <p>السعر: 650 ر.ق | 👁️ 3553 مشاهدة</p>
-            <div style="border-top:1px solid #444; padding-top:10px;">
-                <p>البائع: zolia | المتابعون: 8</p>
-            </div>
-        </div>
-        <div class="action-bar">
-            <button class="btn" style="background:#25D366;">واتساب</button>
-            <button class="btn" style="background:#FF5722;">دردشة</button>
-            <button class="btn" style="background:#2196F3;">اتصال</button>
-        </div>
-    </div>
-
-    <!-- 4. القائمة السفلية -->
-    <nav class="nav-bottom">
-        <div onclick="show('home')">🏠 الرئيسية</div>
-        <div>🔨 مزايدة</div>
-        <div style="background:#9c27b0; padding:10px; border-radius:50%; margin-top:-40px;">+</div>
-        <div>👤 إعلاناتي</div>
-        <div>⚙️ المزيد</div>
-    </nav>
-
-    <script>
-        function show(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-    </script>
 </body>
 </html>
