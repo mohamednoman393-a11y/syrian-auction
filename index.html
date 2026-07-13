@@ -3,58 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مزاد دمشق | منصة شاملة</title>
+    <title>مزاد دمشق | المنصة الشاملة</title>
     <style>
-        :root { --primary: #27ae60; --dark: #121212; --light: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: var(--light); margin: 0; padding: 0; }
-        .page { display: none; padding: 20px; } .active { display: block; }
-        nav { background: #1a1a1a; padding: 15px; display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 100; }
-        .btn { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .card { background: #1e1e1e; padding: 15px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; }
-        .card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .ad-box { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid var(--primary); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 8px; }
+        :root { --primary: #c2185b; --bg: #121212; --card: #1e1e1e; --text: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 70px; }
+        /* نظام التبويب (4 صفحات) */
+        .page { display: none; padding: 15px; } .active { display: block; }
+        /* تصميم المربعات (مثل مزاد قطر) */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.3s; }
+        /* شريط التنقل السفلي */
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .nav-item { text-align: center; font-size: 12px; cursor: pointer; }
+        .add-btn { background: var(--primary); width: 50px; height: 50px; border-radius: 50%; margin-top: -30px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
     </style>
 </head>
 <body>
 
-<nav>
-    <button class="btn" onclick="showPage('p1')">🏠 الرئيسية</button>
-    <button class="btn" onclick="showPage('p2')">📂 التصنيفات</button>
-    <button class="btn" onclick="showPage('p3')">➕ إعلان جديد</button>
-    <button class="btn" style="background:#c0392b" onclick="adminLogin()">⚙️ غرفة التحكم</button>
-</nav>
-
-<!-- 1. الرئيسية -->
+<!-- الصفحات -->
 <div id="p1" class="page active">
-    <h1>🇸🇾 مزاد دمشق</h1>
-    <p>أضخم منصة مزادات في سوريا. تصفح، شارك، وبع بأمان.</p>
-    <div id="mainGrid" class="grid"></div>
+    <h1>مزاد دمشق 🇸🇾</h1>
+    <div class="grid" id="mainCats"></div>
 </div>
 
-<!-- 2. التصنيفات -->
 <div id="p2" class="page">
-    <h2 id="catTitle">التصنيفات الشاملة</h2>
-    <div id="catGrid" class="grid"></div>
+    <button onclick="showPage('p1')">⬅️ عودة</button>
+    <h2 id="catName"></h2>
+    <div class="grid" id="subGrid"></div>
 </div>
 
-<!-- 3. إضافة إعلان -->
 <div id="p3" class="page">
-    <h2>نشر إعلان احترافي</h2>
-    <input type="text" id="iTitle" placeholder="عنوان الإعلان">
-    <select id="iCat"></select>
+    <h2>➕ إضافة إعلان جديد</h2>
+    <input type="text" placeholder="عنوان الإعلان" style="width:90%; padding:10px;">
     <input type="file" multiple accept="image/*,video/*">
-    <textarea placeholder="وصف المنتج بالتفصيل..."></textarea>
-    <button class="btn" style="width:100%" onclick="alert('تم رفع الإعلان للمراجعة')">نشر الإعلان</button>
+    <button style="background:var(--primary); width:100%; padding:15px; border:none; color:white;">نشر الآن</button>
+</div>
+
+<div id="p4" class="page">
+    <h2>⚙️ غرفة التحكم (أدمن)</h2>
+    <div id="adminAds"></div>
+</div>
+
+<!-- شريط التنقل السفلي -->
+<div class="navbar">
+    <div class="nav-item" onclick="showPage('p1')">🏠<br>الرئيسية</div>
+    <div class="nav-item" onclick="alert('المزايدات الحية')">🔨<br>مزايدة</div>
+    <div class="nav-item add-btn" onclick="showPage('p3')">+</div>
+    <div class="nav-item" onclick="alert('إعلاناتي')">👤<br>إعلاناتي</div>
+    <div class="nav-item" onclick="showPage('p4')">⚙️<br>المزيد</div>
 </div>
 
 <script>
     const data = {
-        "عقارات": ["شقق", "فلل", "أراضي", "مكاتب", "مزارع", "شاليهات", "مستودعات", "محلات", "عمارات", "أجنحة", "استراحات", "مخازن"],
+        "عقارات": ["فلل", "شقق سكنية", "أراضي سكنية", "تجارية", "زراعية", "عمارات", "مكاتب", "محلات", "شاليهات", "استراحات", "مخازن", "مزارع"],
         "مركبات": ["سيدان", "دفع رباعي", "عائلية", "رياضية", "كلاسيكية", "شاحنات", "دراجات", "قوارب", "معدات ثقيلة", "قطع غيار", "إكسسوارات", "لوحات"],
-        "إلكترونيات": ["آيفون", "أندرويد", "تابلت", "ساعات", "لابتوب", "كمبيوتر", "كاميرات", "شاشات", "سماعات", "ألعاب", "أجهزة صوت", "طابعات"],
-        "خدمات": ["برمجة", "تصميم", "ترجمة", "تسويق", "تنظيف", "صيانة", "شحن", "توصيل", "تنظيم حفلات", "وظائف", "باحثون عن عمل", "استشارات"]
+        "إلكترونيات": ["آيفون", "أندرويد", "تابلت", "ساعات", "سماعات", "لابتوب", "كمبيوتر", "كاميرات", "مراقبة", "ألعاب", "أشرطة", "شاشات"],
+        "أثاث": ["كنب", "غرف نوم", "طعام", "مكتبي", "حدائق", "سجاد", "ستائر", "إضاءة", "لوحات", "تحف", "ديكور", "مطابخ"]
     };
 
     function showPage(id) {
@@ -62,26 +66,17 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // بناء الواجهة
-    const mainGrid = document.getElementById('mainGrid');
-    const catGrid = document.getElementById('catGrid');
-    const iCat = document.getElementById('iCat');
-
+    // تعبئة البيانات
+    const mainGrid = document.getElementById('mainCats');
     for(let cat in data) {
-        mainGrid.innerHTML += `<div class="card" onclick="showPage('p2')"><h3>${cat}</h3></div>`;
-        iCat.innerHTML += `<option>${cat}</option>`;
-        data[cat].forEach(sub => {
-            catGrid.innerHTML += `<div class="card" onclick="alert('عرض إعلانات ${sub}')"><h4>${sub}</h4></div>`;
-        });
+        mainGrid.innerHTML += `<div class="card" onclick="openSubs('${cat}')"><h3>${cat}</h3></div>`;
     }
 
-    function adminLogin() {
-        const pass = prompt("كلمة سر غرفة التحكم:");
-        if(pass === "123456") {
-            alert("مرحباً بك في لوحة تحكم مدير المزاد - كل الميزات متاحة!");
-        } else {
-            alert("غير مصرح لك بالدخول!");
-        }
+    function openSubs(cat) {
+        document.getElementById('catName').innerText = cat;
+        const subGrid = document.getElementById('subGrid'); subGrid.innerHTML = "";
+        data[cat].forEach(sub => subGrid.innerHTML += `<div class="card" onclick="alert('فتح إعلانات: ${sub}')"><h4>${sub}</h4></div>`);
+        showPage('p2');
     }
 </script>
 </body>
